@@ -49,7 +49,4 @@ jobs:
           name: recon-results
           path: results/
 
-      - name: Download a single artifact
-        uses: actions/download-artifact@v4
-        with:
-          name: my-artifact
+
