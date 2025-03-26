@@ -1,0 +1,50 @@
+name: Automated Subdomain & Live Host Scan
+
+on:
+  schedule:
+    - cron: "0 10 * * *"  # Runs every day at 10:00 AM UTC
+  workflow_dispatch:
+
+jobs:
+  recon:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v2
+
+      - name: Update & Install Dependencies
+        run: |
+          sudo apt-get update -qq
+          sudo apt-get install -y curl git
+
+      - name: Install subfinder
+        run: |
+          curl -sSfL https://raw.githubusercontent.com/projectdiscovery/subfinder/master/install.sh | sh
+          export PATH=$PATH:$(pwd)/bin
+
+      - name: Install httpx
+        run: |
+          curl -sSfL https://raw.githubusercontent.com/projectdiscovery/httpx/master/install.sh | sh
+          export PATH=$PATH:$(pwd)/bin
+
+      - name: Process Domain List for Subdomain Scan and Live Host Check
+        run: |
+          if [ ! -f domains.txt ]; then
+            echo "domains.txt file not found!"
+            exit 1
+          fi
+          mkdir -p results
+          while IFS= read -r domain; do
+            echo "Processing $domain"
+            mkdir -p results/"$domain"
+            # Run subdomain scan
+            subfinder -d "$domain" -silent -o results/"$domain"/subdomains.txt
+            # Check for live hosts
+            cat results/"$domain"/subdomains.txt | httpx -silent -o results/"$domain"/live.txt
+          done < domains.txt
+
+      - name: Upload Results as Artifact
+        uses: actions/upload-artifact@v2
+        with:
+          name: recon-results
+          path: results/
