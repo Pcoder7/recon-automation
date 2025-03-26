@@ -19,13 +19,13 @@ jobs:
 
       - name: Install subfinder
         run: |
-          curl -sSfL https://raw.githubusercontent.com/projectdiscovery/subfinder/master/install.sh | sh
-          echo "$(pwd)/bin" >> $GITHUB_PATH
+          go install -v github.com/projectdiscovery/subfinder/v2/cmd/subfinder@latest
+          echo "$HOME/go/bin" >> $GITHUB_PATH
 
       - name: Install httpx
         run: |
-          curl -sSfL https://raw.githubusercontent.com/projectdiscovery/httpx/master/install.sh | sh
-          echo "$(pwd)/bin" >> $GITHUB_PATH
+          go install -v github.com/projectdiscovery/httpx/cmd/httpx@latest
+          echo "$HOME/go/bin" >> $GITHUB_PATH
 
       - name: Process Domain List for Subdomain Scan and Live Host Check
         run: |
