@@ -44,7 +44,7 @@ jobs:
           done < domains.txt
 
       - name: Upload Results as Artifact
-        uses: actions/upload-artifact@v2
+        uses: actions/upload-artifact@v3
         with:
           name: recon-results
           path: results/
