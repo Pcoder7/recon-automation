@@ -6,11 +6,35 @@ on:
   workflow_dispatch:
 
 permissions:
-    contents: write
+  contents: write
 
 jobs:
-  recon:
+  generate_matrix:
     runs-on: ubuntu-latest
+    outputs:
+      matrix: ${{ steps.set_matrix.outputs.matrix }}
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v2
+
+      - name: Generate Matrix from domains.txt
+        id: set_matrix
+        run: |
+          if [ ! -f domains.txt ]; then
+            echo "domains.txt file not found!"
+            exit 1
+          fi
+          # Create a JSON array from non-empty lines in domains.txt
+          matrix=$(jq -R -s -c 'split("\n") | map(select(length > 0))' domains.txt)
+          echo "Matrix: $matrix"
+          echo "::set-output name=matrix::$matrix"
+
+  scan:
+    needs: generate_matrix
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        domain: ${{ fromJson(needs.generate_matrix.outputs.matrix) }}
     steps:
       - name: Checkout Repository
         uses: actions/checkout@v2
@@ -18,40 +42,48 @@ jobs:
       - name: Update & Install Dependencies
         run: |
           sudo apt-get update -qq
-          sudo apt-get install -y curl git
+          sudo apt-get install -y curl git jq
 
-      - name: Install subfinder
+      - name: Install Tools
         run: |
+          # Install subfinder
           go install -v github.com/projectdiscovery/subfinder/v2/cmd/subfinder@latest
-          echo "$HOME/go/bin" >> $GITHUB_PATH
-
-      - name: Install httpx
-        run: |
+          # Install httpx
           go install -v github.com/projectdiscovery/httpx/cmd/httpx@latest
-          echo "$HOME/go/bin" >> $GITHUB_PATH
+          # Install assetfinder
+          go install -v github.com/tomnomnom/assetfinder@latest
+          # Install Amass v3.23.3
+          #go install -v github.com/OWASP/Amass/v3/...@v3.23.3
+          #echo "$HOME/go/bin" >> $GITHUB_PATH
 
-      - name: Process Domain List for Subdomain Scan and Live Host Check
+      - name: Create Results Directory for ${{ matrix.domain }}
+        run: mkdir -p results/${{ matrix.domain }}
+
+      - name: Run Subdomain Enumeration for ${{ matrix.domain }}
         run: |
-          if [ ! -f domains.txt ]; then
-            echo "domains.txt file not found!"
-            exit 1
-          fi
-          mkdir -p results
-          while IFS= read -r domain; do
-            echo "Processing $domain"
-            mkdir -p results/"$domain"
-            # Run subdomain scan
-            subfinder -d "$domain" -silent -o results/"$domain"/subdomains.txt
-            # Check for live hosts
-            cat results/"$domain"/subdomains.txt | httpx -silent -o results/"$domain"/live.txt
-          done < domains.txt
+          echo "Scanning domain: ${{ matrix.domain }}"
+          # Run subfinder
+          subfinder -d "${{ matrix.domain }}" -silent -o results/${{ matrix.domain }}/subfinder.txt
+          # Run assetfinder
+          assetfinder "${{ matrix.domain }}" > results/${{ matrix.domain }}/assetfinder.txt
+          # Run Amass
+          #amass enum -d "${{ matrix.domain }}" -o results/${{ matrix.domain }}/amass.txt
+          # Combine results and deduplicate
+          cat results/${{ matrix.domain }}/subfinder.txt results/${{ matrix.domain }}/assetfinder.txt | sort -u > results/${{ matrix.domain }}/combined.txt
 
-      - name: Upload Results as Artifact
+      - name: Check Live Hosts with httpx for ${{ matrix.domain }}
+        run: |
+          if [ -s results/${{ matrix.domain }}/combined.txt ]; then
+            cat results/${{ matrix.domain }}/combined.txt | httpx -silent -o results/${{ matrix.domain }}/live.txt
+          else
+            echo "No subdomains found for ${{ matrix.domain }}"
+          fi
+
+      - name: Upload Artifact for ${{ matrix.domain }}
         uses: actions/upload-artifact@v4
         with:
-          name: recon-results
-          path: results/
-     
+          name: ${{ matrix.domain }}-results
+          path: results/${{ matrix.domain }}
       # Optional: Commit results to the repository
 
       - name: Commit and push
