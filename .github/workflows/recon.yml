@@ -1,4 +1,4 @@
-name: Automated Subdomain & Live Host Scan
+name: Parallel Subdomain Enumeration and Live Host Check
 
 on:
   schedule:
@@ -27,7 +27,7 @@ jobs:
           # Create a JSON array from non-empty lines in domains.txt
           matrix=$(jq -R -s -c 'split("\n") | map(select(length > 0))' domains.txt)
           echo "Matrix: $matrix"
-          echo "::set-output name=matrix::$matrix"
+          echo "matrix=$matrix" >> $GITHUB_OUTPUT
 
   scan:
     needs: generate_matrix
@@ -69,7 +69,7 @@ jobs:
           # Run Amass
           #amass enum -d "${{ matrix.domain }}" -o results/${{ matrix.domain }}/amass.txt
           # Combine results and deduplicate
-          cat results/${{ matrix.domain }}/subfinder.txt results/${{ matrix.domain }}/assetfinder.txt | sort -u > results/${{ matrix.domain }}/combined.txt
+          cat results/${{ matrix.domain }}/subfinder.txt results/${{ matrix.domain }}/assetfinder.txt  | sort -u > results/${{ matrix.domain }}/combined.txt
 
       - name: Check Live Hosts with httpx for ${{ matrix.domain }}
         run: |
@@ -84,6 +84,7 @@ jobs:
         with:
           name: ${{ matrix.domain }}-results
           path: results/${{ matrix.domain }}
+
       # Optional: Commit results to the repository
 
       - name: Commit and push
@@ -93,4 +94,4 @@ jobs:
           git config user.email github-actions@github.com
           git add .
           git commit -m "generated"
-          git push
+          git push          
