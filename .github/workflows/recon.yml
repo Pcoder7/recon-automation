@@ -111,6 +111,15 @@ jobs:
           else
             echo "has_new_subdomains=false" >> $GITHUB_OUTPUT
           fi
+      
       # Optional: Commit results to the repository
+      - name: Commit and push results
+        run: |
+          git config --global user.name 'github-actions[bot]'
+          git config --global user.email 'github-actions[bot]@users.noreply.github.com'
+          git add results
+          git commit -m "Update subdomain results" || echo "No changes to commit"
+          git push
+      
 
           
