@@ -40,7 +40,7 @@ jobs:
         uses: actions/checkout@v2
       
       - name: Setup Go
-        uses: actions/setup-go@v3
+        uses: actions/setup-go@v5
         with:
           go-version: '1.21'  # Adjust the version as needed
       
@@ -89,7 +89,28 @@ jobs:
         with:
           name: ${{ matrix.domain }}-results
           path: results/${{ matrix.domain }}
+      - name: Download all artifacts
+        uses: actions/download-artifact@v4
+        with:
+          path: artifacts
 
+      - name: Organize results
+        run: |
+          for artifact in artifacts/*; do
+            domain=$(basename "$artifact" | sed 's/^results-//')
+            mkdir -p "results/$domain"
+            mv "$artifact"/* "results/$domain/"
+          done
+
+      - name: Compare Results
+        id: compare
+        run: |
+          git diff --unified=0 --no-color results | grep '^+[^+]' | sed 's/^+//' > new_subdomains.txt
+          if [ -s new_subdomains.txt ]; then
+            echo "has_new_subdomains=true" >> $GITHUB_OUTPUT
+          else
+            echo "has_new_subdomains=false" >> $GITHUB_OUTPUT
+          fi
       # Optional: Commit results to the repository
 
           
