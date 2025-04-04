@@ -123,11 +123,15 @@ jobs:
           git push
 
       # Trigger Nuclei Scanning in nuclei-automation
-      
+
+  trigger_nuclei:
+    runs-on: ubuntu-latest
+    needs: scan
+    steps:
       - name: Trigger Nuclei Scanning in nuclei-automation
         env:
-          # For public repos you might use the default GITHUB_TOKEN,
-          # but for cross-repository dispatch it's often more reliable to use a PAT.
+          # For public repositories, the default GITHUB_TOKEN may work.
+          # For private repositories, store a PAT with the "repo" scope as PAT_TOKEN.
           PAT_TOKEN: ${{ secrets.PAT_TOKEN }}
         run: |
           curl -X POST \
@@ -135,4 +139,3 @@ jobs:
             -H "Authorization: token ${PAT_TOKEN}" \
             https://api.github.com/repos/Pcoder7/nuclei-automation/dispatches \
             -d '{"event_type": "trigger_nuclei", "client_payload": {"results_repo": "Pcoder7/recon-automation", "results_dir": "results"}}'
-          
