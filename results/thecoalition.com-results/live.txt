@@ -1,13 +1,13 @@
 https://coalitioninc.com
-https://help.thecoalition.com
-https://ap.thecoalition.com
 https://blog.thecoalition.com
+https://thecoalition.com
+https://ap.thecoalition.com
 https://www.thecoalition.com
 https://www.coalitioninc.com
-https://thecoalition.com
+https://linklock.titanhq.com
+https://help.thecoalition.com
 https://files.thecoalition.com
 https://api.thecoalition.com
-https://linklock.titanhq.com
 https://bb.thecoalition.com
 https://platform.thecoalition.com
 http://admin-tools.thecoalition.com
