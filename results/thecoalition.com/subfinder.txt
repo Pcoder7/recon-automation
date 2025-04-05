@@ -4,3 +4,9 @@ www.thecoalition.com
 help.thecoalition.com
 blog.thecoalition.com
 api.thecoalition.com
+api.thecoalition.com
+blog.thecoalition.com
+files.thecoalition.com
+help.thecoalition.com
+platform.thecoalition.com
+www.thecoalition.com
