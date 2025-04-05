@@ -94,8 +94,13 @@ jobs:
       - name: Compare Results for ${{ matrix.domain }}
         id: compare
         run: |
-          # Compare current results with last commit for this domain's results folder
-          git diff --unified=0 --no-color results/${{ matrix.domain }} | grep '^+[^+]' | sed 's/^+//' > results/${{ matrix.domain }}/new_subdomains.txt
+          # Compare only the combined.txt file (which contains subdomain enumeration output)
+          git diff --unified=0 --no-color results/${{ matrix.domain }}/combined.txt | grep '^+[^+]' | sed 's/^+//' > results/${{ matrix.domain }}/new_subdomains.txt
+          if [ -s results/${{ matrix.domain }}/new_subdomains.txt ]; then
+            echo "has_new_subdomains=true" >> $GITHUB_OUTPUT
+          else
+            echo "has_new_subdomains=false" >> $GITHUB_OUTPUT
+          fi  
 
       - name: Install notify
         run: |
