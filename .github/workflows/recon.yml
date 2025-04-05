@@ -84,6 +84,8 @@ jobs:
           # amass enum -d "${{ matrix.domain }}" -o results/${{ matrix.domain }}/amass.txt
           # Combine results and deduplicate into combined.txt
           cat results/${{ matrix.domain }}/subfinder.txt results/${{ matrix.domain }}/assetfinder.txt | sort -u > results/${{ matrix.domain }}/combined.txt
+
+          echo "Scanning Live domain: ${{ matrix.domain }}"
           # Check for live hosts with httpx
           cat results/${{ matrix.domain }}/combined.txt | httpx -silent -o results/${{ matrix.domain }}/live.txt
           # Run cdncheck on combined.txt and output cdncheck.txt
