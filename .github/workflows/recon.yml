@@ -42,12 +42,12 @@ jobs:
       - name: Setup Go
         uses: actions/setup-go@v5
         with:
-          go-version: '1.22'  # Adjust the version as needed
+          go-version: '1.22'
       
       - name: Update & Install Dependencies
         run: |
           sudo apt-get update -qq
-          sudo apt-get install -y curl git jq
+          sudo apt-get install -y curl git jq unzip
 
       - name: Install Tools
         run: |
@@ -57,9 +57,18 @@ jobs:
           go install -v github.com/projectdiscovery/httpx/cmd/httpx@latest
           # Install assetfinder
           go install -v github.com/tomnomnom/assetfinder@latest
-          # Install Amass v3.23.3
-          #go install -v github.com/OWASP/Amass/v3/...@v3.23.3
-          #echo "$HOME/go/bin" >> $GITHUB_PATH
+          # Install Amass v3.23.3 (uncomment if needed)
+          # curl -LO https://github.com/OWASP/Amass/releases/download/v3.23.3/amass_linux_amd64_v3.23.3.zip
+          # unzip amass_linux_amd64_v3.23.3.zip
+          # sudo mv amass_linux_amd64_v3.23.3/amass /usr/local/bin/
+          # rm -rf amass_linux_amd64_v3.23.3*
+          # Install cdncheck
+          go install -v github.com/projectdiscovery/cdncheck/cmd/cdncheck@latest
+          echo "$HOME/go/bin" >> $GITHUB_PATH
+
+      - name: Download resolvers.txt
+        run: |
+          curl -sLo resolvers.txt https://raw.githubusercontent.com/trickest/resolvers/refs/heads/main/resolvers.txt
 
       - name: Create Results Directory for ${{ matrix.domain }}
         run: mkdir -p results/${{ matrix.domain }}
@@ -70,59 +79,36 @@ jobs:
           # Run subfinder
           subfinder -d "${{ matrix.domain }}" -silent -o results/${{ matrix.domain }}/subfinder.txt
           # Run assetfinder
-          assetfinder "${{ matrix.domain }}" > results/${{ matrix.domain }}/assetfinder.txt
-          # Run Amass
-          #amass enum -d "${{ matrix.domain }}" -o results/${{ matrix.domain }}/amass.txt
-          # Combine results and deduplicate
-          cat results/${{ matrix.domain }}/subfinder.txt results/${{ matrix.domain }}/assetfinder.txt  | sort -u > results/${{ matrix.domain }}/combined.txt
+          assetfinder --subs-only "${{ matrix.domain }}" > results/${{ matrix.domain }}/assetfinder.txt
+          # Uncomment to run Amass if needed:
+          # amass enum -d "${{ matrix.domain }}" -o results/${{ matrix.domain }}/amass.txt
+          # Combine results and deduplicate into combined.txt
+          cat results/${{ matrix.domain }}/subfinder.txt results/${{ matrix.domain }}/assetfinder.txt | sort -u > results/${{ matrix.domain }}/combined.txt
+          # Check for live hosts with httpx
+          cat results/${{ matrix.domain }}/combined.txt | httpx -silent -o results/${{ matrix.domain }}/live.txt
+          # Run cdncheck on combined.txt and output cdncheck.txt
+          cdncheck -i results/${{ matrix.domain }}/combined.txt -r resolvers.txt -no-color -resp -retry 1 -output results/${{ matrix.domain }}/cdncheck.txt
 
-      - name: Check Live Hosts with httpx for ${{ matrix.domain }}
-        run: |
-          if [ -s results/${{ matrix.domain }}/combined.txt ]; then
-            cat results/${{ matrix.domain }}/combined.txt | httpx -silent -o results/${{ matrix.domain }}/live.txt
-          else
-            echo "No subdomains found for ${{ matrix.domain }}"
-          fi
-
-      - name: Upload Artifact for ${{ matrix.domain }}
-        uses: actions/upload-artifact@v4
-        with:
-          name: ${{ matrix.domain }}-results
-          path: results/${{ matrix.domain }}
-      - name: Download all artifacts
-        uses: actions/download-artifact@v4
-        with:
-          path: artifacts
-
-      - name: Organize results
-        run: |
-          for artifact in artifacts/*; do
-            domain=$(basename "$artifact" | sed 's/^results-//')
-            mkdir -p "results/$domain"
-            mv "$artifact"/* "results/$domain/"
-          done
-
-      - name: Compare Results
+      - name: Compare Results for ${{ matrix.domain }}
         id: compare
         run: |
-          git diff --unified=0 --no-color results | grep '^+[^+]' | sed 's/^+//' > new_subdomains.txt
-          if [ -s new_subdomains.txt ]; then
-            echo "has_new_subdomains=true" >> $GITHUB_OUTPUT
-          else
-            echo "has_new_subdomains=false" >> $GITHUB_OUTPUT
-          fi
-      
-      # Optional: Commit results to the repository
-      - name: Commit and push results
+          # Compare current results with last commit for this domain's results folder
+          git diff --unified=0 --no-color results/${{ matrix.domain }} | grep '^+[^+]' | sed 's/^+//' > results/${{ matrix.domain }}/new_subdomains.txt
+
+      - name: Install notify
+        run: |
+          go install -v github.com/projectdiscovery/notify/cmd/notify@latest
+          mkdir -p ~/.config/notify/
+          cat <<EOF > ~/.config/notify/provider-config.yaml
+
+      - name: Commit and Push Results for ${{ matrix.domain }}
         run: |
           git config --global user.name 'github-actions[bot]'
           git config --global user.email 'github-actions[bot]@users.noreply.github.com'
-          git add results
-          git commit -m "Update subdomain results" || echo "No changes to commit"
-          git pull --rebase origin main
-          git push
-
-      # Trigger Nuclei Scanning in nuclei-automation
+          git add results/${{ matrix.domain }}
+          git commit -m "Update subdomain results for ${{ matrix.domain }}" || echo "No changes to commit"
+          git pull --rebase origin main || echo "No remote changes"
+          git push || echo "Push failed or no changes to push"
 
   trigger_nuclei:
     runs-on: ubuntu-latest
@@ -130,8 +116,8 @@ jobs:
     steps:
       - name: Trigger Nuclei Scanning in nuclei-automation
         env:
-          # For public repositories, the default GITHUB_TOKEN may work.
-          # For private repositories, store a PAT with the "repo" scope as PAT_TOKEN.
+          # For public repositories the default GITHUB_TOKEN may be used;
+          # For private repositories, store a PAT with "repo" scope as PAT_TOKEN.
           PAT_TOKEN: ${{ secrets.PAT_TOKEN }}
         run: |
           curl -X POST \
