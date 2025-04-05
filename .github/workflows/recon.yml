@@ -87,7 +87,7 @@ jobs:
           # Check for live hosts with httpx
           cat results/${{ matrix.domain }}/combined.txt | httpx -silent -o results/${{ matrix.domain }}/live.txt
           # Run cdncheck on combined.txt and output cdncheck.txt
-          cdncheck -i results/${{ matrix.domain }}/combined.txt -r resolvers.txt -no-color -resp -retry 1 -output results/${{ matrix.domain }}/cdncheck.txt
+          cat results/${{ matrix.domain }}/combined.txt | cdncheck -r resolvers.txt -no-color -resp -retry 1 -output results/${{ matrix.domain }}/cdncheck.txt
 
       - name: Compare Results for ${{ matrix.domain }}
         id: compare
