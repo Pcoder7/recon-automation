@@ -9,6 +9,17 @@ dd.vulnweb.com
 dental.vulnweb.com
 dev2.vulnweb.com
 dream.vulnweb.com
+edu-rost.rutestasp.vulnweb.com
+edu-rost.ruwww.vulnweb.com
+family.vulnweb.com
+fb.vulnweb.com
+httptestaspnet.vulnweb.com
+movie.vulnweb.com
+odincovo.vulnweb.com
+rest.vulnweb.com
+restasp.vulnweb.com
+sip.vulnweb.com
+space.vulnweb.com
 suporte.vulnweb.com
 template.vulnweb.com
 test.php.vulnweb.com
