@@ -1,0 +1,15 @@
+apsis.com
+customers.apsis.com
+tools.apsis.com
+www.apsis.com
+dev.apsis.com
+customweb1.apsis.com
+developer.apsis.com
+help.apsis.com
+one-material.apsis.com
+jobs.apsis.com
+soc-files.apsis.com
+tr.pro-test.apsis.com
+controller.apsis.com
+knowledge.apsis.com
+xml.apsis.com

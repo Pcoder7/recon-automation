@@ -40,7 +40,6 @@ taskforce-stage.apsis.com
 temp-kb.apsis.com
 temphelp.apsis.com
 test-gallery.apsis.com
-test.apsis.com
 tools.apsis.com
 tr.apsis.com
 tr.pro-test.apsis.com
