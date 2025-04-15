@@ -113,7 +113,7 @@ jobs:
       - name: Run puredns Bruteforce for ${{ matrix.domain }}
         run: |
           echo "Running puredns bruteforce for ${{ matrix.domain }}"
-          puredns bruteforce "${{ matrix.domain }}" all_levels.txt -r resolvers.txt --resolvers-trusted resolvers-trusted.txt --write results/${{ matrix.domain }}/bruteforce_result.txt
+          puredns bruteforce all_levels.txt ${{ matrix.domain }} -r resolvers.txt --resolvers-trusted resolvers-trusted.txt --write results/${{ matrix.domain }}/bruteforce_result.txt
 
       - name: Resolve Combined Results using puredns for ${{ matrix.domain }}
         run: |
