@@ -49,6 +49,13 @@ jobs:
           sudo apt-get update -qq
           sudo apt-get install -y curl git jq unzip
 
+      - name: Install massdns (prerequisite for puredns)
+        run: |
+          git clone https://github.com/blechschmidt/massdns.git
+          cd massdns
+          make
+          sudo make install          
+
       - name: Install Tools
         run: |
           # Install subfinder
@@ -62,6 +69,10 @@ jobs:
           # unzip amass_linux_amd64_v3.23.3.zip
           # sudo mv amass_linux_amd64_v3.23.3/amass /usr/local/bin/
           # rm -rf amass_linux_amd64_v3.23.3*
+          # Install puredns (v2)
+          go install github.com/d3mondev/puredns/v2@latest
+          # Install alterx for subdomain permutation & enrichment
+          go install github.com/projectdiscovery/alterx/cmd/alterx@latest        
           # Install cdncheck
           go install -v github.com/projectdiscovery/cdncheck/cmd/cdncheck@latest
           echo "$HOME/go/bin" >> $GITHUB_PATH
@@ -69,6 +80,14 @@ jobs:
       - name: Download resolvers.txt
         run: |
           curl -sLo resolvers.txt https://raw.githubusercontent.com/trickest/resolvers/refs/heads/main/resolvers.txt
+          curl -sLo resolvers-trusted https://raw.githubusercontent.com/trickest/resolvers/refs/heads/main/resolvers-trusted.txt
+
+      - name: Download Subdomain Wordlists
+        run: |
+          curl -sLo level1.txt https://raw.githubusercontent.com/trickest/wordlists/refs/heads/main/inventory/levels/level1.txt
+          curl -sLo level2.txt https://raw.githubusercontent.com/trickest/wordlists/refs/heads/main/inventory/levels/level2.txt
+          curl -sLo level3.txt https://raw.githubusercontent.com/trickest/wordlists/refs/heads/main/inventory/levels/level3.txt
+          cat level1.txt level2.txt level3.txt > all_levels.txt          
 
       - name: Create Results Directory for ${{ matrix.domain }}
         run: mkdir -p results/${{ matrix.domain }}
@@ -91,6 +110,30 @@ jobs:
           # Run cdncheck on combined.txt and output cdncheck.txt
           cat results/${{ matrix.domain }}/combined.txt | cdncheck -r resolvers.txt -no-color -resp -retry 1 -output results/${{ matrix.domain }}/cdncheck.txt
 
+      - name: Run puredns Bruteforce for ${{ matrix.domain }}
+        run: |
+          echo "Running puredns bruteforce for ${{ matrix.domain }}"
+          puredns bruteforce all_levels.txt -d "${{ matrix.domain }}" -r resolvers.txt --resolvers-trusted resolvers-trusted.txt --write results/${{ matrix.domain }}/bruteforce_result.txt
+
+      - name: Resolve Combined Results using puredns for ${{ matrix.domain }}
+        run: |
+          echo "Resolving combined subdomains for ${{ matrix.domain }}"
+          puredns resolve results/${{ matrix.domain }}/combined.txt -r resolvers.txt --resolvers-trusted resolvers-trusted.txt --write results/${{ matrix.domain }}/resolved_combined.txt
+
+      - name: Combine Bruteforce and Resolved Results for ${{ matrix.domain }}
+        run: |
+          cat results/${{ matrix.domain }}/bruteforce_result.txt results/${{ matrix.domain }}/resolved_combined.txt | sort -u > results/${{ matrix.domain }}/puredns_combined.txt
+
+      - name: Enrich Subdomains Using alterx for ${{ matrix.domain }}
+        run: |
+          echo "Enriching subdomain list for ${{ matrix.domain }} using alterx"
+          cat results/${{ matrix.domain }}/puredns_combined.txt | alterx -enrich > results/${{ matrix.domain }}/alterx_enriched.txt
+
+      - name: Resolve Alterx Enriched Subdomains Using puredns for ${{ matrix.domain }}
+        run: |
+          echo "Resolving enriched subdomains for ${{ matrix.domain }} via puredns"
+          puredns resolve results/${{ matrix.domain }}/alterx_enriched.txt -r resolvers.txt --resolvers-trusted resolvers-trusted.txt --write results/${{ matrix.domain }}/alterx.txt
+      
       - name: Compare Results for ${{ matrix.domain }}
         id: compare
         run: |
