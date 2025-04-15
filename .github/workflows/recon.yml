@@ -80,7 +80,7 @@ jobs:
       - name: Download resolvers.txt
         run: |
           curl -sLo resolvers.txt https://raw.githubusercontent.com/trickest/resolvers/refs/heads/main/resolvers.txt
-          curl -sLo resolvers-trusted https://raw.githubusercontent.com/trickest/resolvers/refs/heads/main/resolvers-trusted.txt
+          curl -sLo resolvers-trusted.txt https://raw.githubusercontent.com/trickest/resolvers/refs/heads/main/resolvers-trusted.txt
 
       - name: Download Subdomain Wordlists
         run: |
