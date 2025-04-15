@@ -109,17 +109,21 @@ jobs:
           cat results/${{ matrix.domain }}/combined.txt | httpx -silent -o results/${{ matrix.domain }}/live.txt
           # Run cdncheck on combined.txt and output cdncheck.txt
           cat results/${{ matrix.domain }}/combined.txt | cdncheck -r resolvers.txt -no-color -resp -retry 1 -output results/${{ matrix.domain }}/cdncheck.txt
-
+      
       - name: Run puredns Bruteforce for ${{ matrix.domain }}
         run: |
           echo "Running puredns bruteforce for ${{ matrix.domain }}"
-          cat all_levels.txt | puredns bruteforce ${{ matrix.domain }} -r resolvers.txt --resolvers-trusted resolvers-trusted.txt --write results/${{ matrix.domain }}/bruteforce_result.txt
-
+          cat all_levels.txt | puredns bruteforce ${{ matrix.domain }} -r resolvers.txt --resolvers-trusted resolvers-trusted.txt --write results/${{ matrix.domain }}/bruteforce_res.txt
+          cat results/${{ matrix.domain }}/bruteforce_res.txt | sort -u > results/${{ matrix.domain }}/bruteforce_result.txt
+          rm results/${{ matrix.domain }}/bruteforce_res.txt
+          
       - name: Resolve Combined Results using puredns for ${{ matrix.domain }}
         run: |
           echo "Resolving combined subdomains for ${{ matrix.domain }}"
-          puredns resolve results/${{ matrix.domain }}/combined.txt -r resolvers.txt --resolvers-trusted resolvers-trusted.txt --write results/${{ matrix.domain }}/resolved_combined.txt
-
+          puredns resolve results/${{ matrix.domain }}/combined.txt -r resolvers.txt --resolvers-trusted resolvers-trusted.txt --write results/${{ matrix.domain }}/resolved_comb.txt
+          cat results/${{ matrix.domain }}/resolved_comb.txt | sort -u > results/${{ matrix.domain }}/resolved_combined.txt
+          rm results/${{ matrix.domain }}/resolved_comb.txt
+          
       - name: Combine Bruteforce and Resolved Results for ${{ matrix.domain }}
         run: |
           cat results/${{ matrix.domain }}/bruteforce_result.txt results/${{ matrix.domain }}/resolved_combined.txt | sort -u > results/${{ matrix.domain }}/puredns_combined.txt
@@ -132,7 +136,9 @@ jobs:
       - name: Resolve Alterx Enriched Subdomains Using puredns for ${{ matrix.domain }}
         run: |
           echo "Resolving enriched subdomains for ${{ matrix.domain }} via puredns"
-          puredns resolve results/${{ matrix.domain }}/alterx_enriched.txt -r resolvers.txt --resolvers-trusted resolvers-trusted.txt --write results/${{ matrix.domain }}/alterx.txt
+          puredns resolve results/${{ matrix.domain }}/alterx_enriched.txt -r resolvers.txt --resolvers-trusted resolvers-trusted.txt --write results/${{ matrix.domain }}/alterx_duplicate.txt
+          cat results/${{ matrix.domain }}/alterx_duplicate.txt | sort -u > results/${{ matrix.domain }}/alterx.txt
+          rm results/${{ matrix.domain }}/alterx_duplicate.txt
       
       - name: Compare Results for ${{ matrix.domain }}
         id: compare
