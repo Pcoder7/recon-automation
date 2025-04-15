@@ -1,8 +1,8 @@
-https://help.thecoalition.com
-https://thecoalition.com
-https://www.thecoalition.com
 https://ap.thecoalition.com
 https://blog.thecoalition.com
+https://www.thecoalition.com
+https://help.thecoalition.com
+https://thecoalition.com
 https://api.thecoalition.com
 https://files.thecoalition.com
 https://platform.thecoalition.com
