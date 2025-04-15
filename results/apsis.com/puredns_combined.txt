@@ -18,6 +18,5 @@ one-material.apsis.com
 smtp.apsis.com
 soc-files.apsis.com
 tools.apsis.com
-tr.pro-test.apsis.com
 www.apsis.com
 xml.apsis.com
