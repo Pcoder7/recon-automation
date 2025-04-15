@@ -1,3 +1,4 @@
 testaspnet.vulnweb.com
 vulnweb.com
+rest.vulnweb.com
 testasp.vulnweb.com
