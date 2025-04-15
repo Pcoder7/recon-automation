@@ -1,4 +1,4 @@
 rest.vulnweb.com
-vulnweb.com
 testasp.vulnweb.com
 testaspnet.vulnweb.com
+vulnweb.com
