@@ -1,0 +1,3 @@
+rest.developers.vulnweb.com
+resttech.vulnweb.com
+sieb-web1.testphp.vulnweb.com

@@ -14,6 +14,8 @@ virus.vulnweb.com
 www.virus.vulnweb.com
 viruswall.vulnweb.com
 www.vulnweb.com
+resttech.vulnweb.com
+rest.developers.vulnweb.com
 vulnweb.com
 dental.vulnweb.com
 adrian.users.vulnweb.com
@@ -30,5 +32,3 @@ sip.vulnweb.com
 suporte.vulnweb.com
 movie.vulnweb.com
 space.vulnweb.com
-central.vulnweb.com
-xml.vulnweb.com

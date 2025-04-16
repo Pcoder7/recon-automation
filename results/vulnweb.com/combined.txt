@@ -2,7 +2,6 @@
 adrian.users.vulnweb.com
 antivirus1.vulnweb.com
 blogger.com.vulnweb.com
-central.vulnweb.com
 comunicare.vulnweb.com
 cust4.vulnweb.com
 dd.vulnweb.com
@@ -17,8 +16,11 @@ fb.vulnweb.com
 httptestaspnet.vulnweb.com
 movie.vulnweb.com
 odincovo.vulnweb.com
+rest.developers.vulnweb.com
 rest.vulnweb.com
 restasp.vulnweb.com
+resttech.vulnweb.com
+sieb-web1.testphp.vulnweb.com
 sip.vulnweb.com
 space.vulnweb.com
 suporte.vulnweb.com
@@ -44,4 +46,3 @@ www.testasp.vulnweb.com
 www.testphp.vulnweb.com
 www.virus.vulnweb.com
 www.vulnweb.com
-xml.vulnweb.com
