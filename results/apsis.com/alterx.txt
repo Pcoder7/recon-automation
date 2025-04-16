@@ -1,3 +1,4 @@
+cdnm.apsis.com
 controller.apsis.com
 customers.apsis.com
 customweb1.apsis.com
@@ -6,12 +7,14 @@ dev.apsis.com
 developer.apsis.com
 enterpriseenrollment.apsis.com
 enterpriseregistration.apsis.com
+files.apsis.com
 help.apsis.com
 jobs.apsis.com
-knowledge.apsis.com
 ns1.apsis.com
 ns2.apsis.com
 smtp.apsis.com
+soc-files.apsis.com
 tools.apsis.com
+tr.pro-test.apsis.com
 www.apsis.com
 xml.apsis.com
