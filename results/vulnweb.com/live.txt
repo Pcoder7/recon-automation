@@ -1,7 +1,7 @@
 http://rest.vulnweb.com
-http://www.vulnweb.com
 http://vulnweb.com
-http://testhtml5.vulnweb.com
+http://www.vulnweb.com
 http://testphp.vulnweb.com
 http://testasp.vulnweb.com
+http://testhtml5.vulnweb.com
 http://testaspnet.vulnweb.com
