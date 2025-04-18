@@ -1,10 +1,2 @@
-localhost.administrator.vulnweb.com
-localhost.private.vulnweb.com
-rest.review.vulnweb.com
-testasp.builds.vulnweb.com
-testasp.legacy.vulnweb.com
-testasp.plugins.vulnweb.com
-testasp.stage.vulnweb.com
-testasp.wordpress.vulnweb.com
-testaspnet.assets.vulnweb.com
-www.php.vulnweb.com
+rest.web.vulnweb.com
+testaspmobile.vulnweb.com

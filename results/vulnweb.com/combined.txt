@@ -11,6 +11,7 @@ odincovo.vulnweb.com
 rest.developers.vulnweb.com
 rest.review.vulnweb.com
 rest.vulnweb.com
+rest.web.vulnweb.com
 restasp.vulnweb.com
 resttech.vulnweb.com
 sieb-web1.testphp.vulnweb.com
@@ -25,6 +26,7 @@ testasp.plugins.vulnweb.com
 testasp.stage.vulnweb.com
 testasp.vulnweb.com
 testasp.wordpress.vulnweb.com
+testaspmobile.vulnweb.com
 testaspnet.assets.vulnweb.com
 testaspnet.vulnweb.com
 testaspx.vulnweb.com
