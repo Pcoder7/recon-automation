@@ -156,6 +156,37 @@ jobs:
           go install -v github.com/projectdiscovery/notify/cmd/notify@latest
           mkdir -p ~/.config/notify/
           cat <<EOF > ~/.config/notify/provider-config.yaml
+              # Write provider config with our Discord webhook
+    
+          discord:
+            - id: "subdomain-scan"
+              discord_channel: "subdomain-scan"
+              discord_webhook_url: "${{ secrets.DIS_WEBHOOK }}"
+      
+      - name: 'Notify Discord for ${{ matrix.domain }}'
+        run: |
+          DATE=$(date +"%d-%m-%Y")
+          new_file="results/${{ matrix.domain }}/new_subdomains.txt"
+          if [ -f "$new_file" ]; then
+            count=$(wc -l < "$new_file")
+            if [ "$count" -gt 50 ]; then
+              echo "[+] New subdomains > 50 for ${{ matrix.domain }}. Sending file."
+              notify -bulk -id discord-webhook -data "$new_file"
+            elif [ "$count" -gt 0 ]; then
+              echo "[+] New subdomains ≤ 50 for ${{ matrix.domain }}. Sending line by line."
+              {
+                echo "New subdomains for ${{ matrix.domain }}"
+                echo "Date - $DATE"
+                cat "$new_file"
+              } > tmp_message.txt
+              notify -id discord-webhook -data tmp_message.txt
+            else
+              echo "No new subdomains for ${{ matrix.domain }}."
+            fi
+          else
+            echo "new_subdomains.txt not found for ${{ matrix.domain }}."
+          fi
+             
 
       - name: Commit and Push Results for ${{ matrix.domain }}
         run: |
