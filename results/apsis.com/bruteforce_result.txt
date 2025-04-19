@@ -1,4 +1,5 @@
 cdnm.apsis.com
+controller.apsis.com
 customers.apsis.com
 customweb1.apsis.com
 d7.apsis.com
@@ -14,6 +15,7 @@ ns1.apsis.com
 ns2.apsis.com
 one-material.apsis.com
 smtp.apsis.com
+soc-files.apsis.com
 tools.apsis.com
 www.apsis.com
 xml.apsis.com
