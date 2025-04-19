@@ -25,14 +25,3 @@ testasp.legacy.vulnweb.com
 testasp.plugins.vulnweb.com
 testasp.stage.vulnweb.com
 testasp.vulnweb.com
-testasp.wordpress.vulnweb.com
-testaspmobile.vulnweb.com
-testaspnet.assets.vulnweb.com
-testaspnet.vulnweb.com
-testaspx.vulnweb.com
-testhtml5.vulnweb.com
-testphp.vulnweb.com
-tetphp.vulnweb.com
-ttestphp.vulnweb.com
-virus.vulnweb.com
-viruswall.vulnweb.com
