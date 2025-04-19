@@ -169,8 +169,9 @@ jobs:
           cat ~/.config/notify/provider-config.yaml  
 
       - name: Debug: Echo DISCORD_WEBHOOK
-        run: echo "$DIS_WEBHOOK"
-             sed -e 's/.*/&/' ~/.config/notify/provider-config.yaml
+        run: | 
+          echo "$DIS_WEBHOOK"
+          sed -e 's/.*/&/' ~/.config/notify/provider-config.yaml
         env:
           DISCORD_WEBHOOK: ${{ secrets.DIS_WEBHOOK }}
     
