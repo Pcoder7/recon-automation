@@ -161,7 +161,7 @@ jobs:
             - id: "subscan"
               discord_channel: "subdomain-scan"
               discord_format: "{{data}}"
-              discord_webhook_url: "${{ secrets.DIS_WEBHOOK }}"
+              discord_webhook_url: ${{ secrets.DIS_WEBHOOK }}
           EOF
           # display and show provider-config.yaml file
           cat ~/.config/notify/provider-config.yaml  
