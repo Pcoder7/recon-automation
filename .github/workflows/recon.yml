@@ -155,7 +155,7 @@ jobs:
         run: |
           go install -v github.com/projectdiscovery/notify/cmd/notify@latest
           mkdir -p ~/.config/notify/
-          display show provider-config.yaml file
+             # display and show provider-config.yaml file
           cat ~/.config/notify/provider-config.yaml   
           
           cat <<EOF > ~/.config/notify/provider-config.yaml
