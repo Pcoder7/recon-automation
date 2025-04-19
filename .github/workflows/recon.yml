@@ -103,6 +103,7 @@ jobs:
               discord_format: "{{data}}"
               discord_webhook_url: "${{ secrets.DIS_WEBHOOK }}"
           EOF
+          echo "$HOME/go/bin" >> $GITHUB_PATH
           # display and show provider-config.yaml file
           cat ~/.config/notify/provider-config.yaml  
 
