@@ -1,2 +1,0 @@
-rest.web.vulnweb.com
-testaspmobile.vulnweb.com
