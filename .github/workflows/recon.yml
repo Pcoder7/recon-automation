@@ -155,9 +155,6 @@ jobs:
         run: |
           go install -v github.com/projectdiscovery/notify/cmd/notify@latest
           mkdir -p ~/.config/notify/
-             # display and show provider-config.yaml file
-          cat ~/.config/notify/provider-config.yaml   
-          
           cat <<EOF > ~/.config/notify/provider-config.yaml
               # Write provider config with our Discord webhook
           discord:
@@ -166,7 +163,8 @@ jobs:
               discord_format: "{{data}}"
               discord_webhook_url: "${{ secrets.DIS_WEBHOOK }}"
           EOF
-          
+          # display and show provider-config.yaml file
+          cat ~/.config/notify/provider-config.yaml  
       - name: 'Notify Discord for ${{ matrix.domain }}'
         run: |
           DATE=$(date +"%d-%m-%Y")
