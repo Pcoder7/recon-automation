@@ -88,7 +88,31 @@ jobs:
           curl -sLo level2.txt https://raw.githubusercontent.com/trickest/wordlists/refs/heads/main/inventory/levels/level2.txt
           curl -sLo level3.txt https://raw.githubusercontent.com/trickest/wordlists/refs/heads/main/inventory/levels/level3.txt
           cat level1.txt level2.txt level3.txt > all_levels.txt          
+      
+      - name: Install notify
+        env: 
+          DISCORD_WEBHOOK: ${{ secrets.DIS_WEBHOOK }}
+        run: |
+          go install -v github.com/projectdiscovery/notify/cmd/notify@latest
+          mkdir -p ~/.config/notify/
+          cat <<EOF > ~/.config/notify/provider-config.yaml
+              # Write provider config with our Discord webhook
+          discord:
+            - id: "subscan"
+              discord_channel: "subdomain-scan"
+              discord_format: "{{data}}"
+              discord_webhook_url: "${{ secrets.DIS_WEBHOOK }}"
+          EOF
+          # display and show provider-config.yaml file
+          cat ~/.config/notify/provider-config.yaml  
 
+      - name: Show notify config
+        run: | 
+          echo "$DIS_WEBHOOK"
+          sed -e 's/.*/&/' ~/.config/notify/provider-config.yaml
+        env:
+          DISCORD_WEBHOOK: ${{ secrets.DIS_WEBHOOK }}
+          
       - name: Create Results Directory for ${{ matrix.domain }}
         run: mkdir -p results/${{ matrix.domain }}
 
@@ -151,29 +175,7 @@ jobs:
             echo "has_new_subdomains=false" >> $GITHUB_OUTPUT
           fi  
 
-      - name: Install notify
-        env: 
-          DISCORD_WEBHOOK: ${{ secrets.DIS_WEBHOOK }}
-        run: |
-          go install -v github.com/projectdiscovery/notify/cmd/notify@latest
-          mkdir -p ~/.config/notify/
-          cat <<EOF > ~/.config/notify/provider-config.yaml
-              # Write provider config with our Discord webhook
-          discord:
-            - id: "subscan"
-              discord_channel: "subdomain-scan"
-              discord_format: "{{data}}"
-              discord_webhook_url: "${{ secrets.DIS_WEBHOOK }}"
-          EOF
-          # display and show provider-config.yaml file
-          cat ~/.config/notify/provider-config.yaml  
 
-      - name: Debug: Echo DISCORD_WEBHOOK
-        run: | 
-          echo "$DIS_WEBHOOK"
-          sed -e 's/.*/&/' ~/.config/notify/provider-config.yaml
-        env:
-          DISCORD_WEBHOOK: ${{ secrets.DIS_WEBHOOK }}
     
       - name: 'Notify Discord for ${{ matrix.domain }}'
         run: |
