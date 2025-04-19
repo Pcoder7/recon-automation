@@ -186,7 +186,7 @@ jobs:
             count=$(wc -l < "$new_file")
             if [ "$count" -gt 50 ]; then
               echo "[+] New subdomains > 50 for ${{ matrix.domain }}. Sending file."
-              notify -bulk -id discord-webhook -data "$new_file"
+              notify -bulk -id subscan -data "$new_file"
             elif [ "$count" -gt 0 ]; then
               echo "[+] New subdomains ≤ 50 for ${{ matrix.domain }}. Sending line by line."
               {
@@ -194,7 +194,7 @@ jobs:
                 echo "Date - $DATE"
                 cat "$new_file"
               } > tmp_message.txt
-              notify -id discord-webhook -data tmp_message.txt
+              notify -id subscan -data tmp_message.txt
             else
               echo "No new subdomains for ${{ matrix.domain }}."
             fi
