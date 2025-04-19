@@ -12,6 +12,7 @@ odincovo.vulnweb.com
 rest.developers.vulnweb.com
 rest.manager.vulnweb.com
 rest.partner.vulnweb.com
+rest.payment.vulnweb.com
 rest.review.vulnweb.com
 rest.vulnweb.com
 rest.web.vulnweb.com

@@ -14,6 +14,7 @@ virus.vulnweb.com
 www.virus.vulnweb.com
 viruswall.vulnweb.com
 www.vulnweb.com
+rest.payment.vulnweb.com
 rest.manager.vulnweb.com
 localhost.shop.vulnweb.com
 rest.partner.vulnweb.com
