@@ -115,7 +115,9 @@ jobs:
           DISCORD_WEBHOOK: ${{ secrets.DIS_WEBHOOK }}
           
       - name: Create Results Directory for ${{ matrix.domain }}
-        run: mkdir -p results/${{ matrix.domain }}
+        run: |
+           mkdir -p results/${{ matrix.domain }}
+           rm -f results/${{ matrix.domain }}/*.txt || true       
 
       - name: Run Subdomain Enumeration for ${{ matrix.domain }}
         run: |
@@ -169,7 +171,11 @@ jobs:
         id: compare
         run: |
           # Compare only the combined.txt file (which contains subdomain enumeration output)
-          git diff --unified=0 --no-color results/${{ matrix.domain }}/combined.txt | grep '^+[^+]' | sed 's/^+//' > results/${{ matrix.domain }}/new_subdomains.txt
+          NEW="results/${{ matrix.domain }}/combined.txt"
+          OLD=$(mktemp)
+          git show HEAD:$NEW 2>/dev/null | sort -u > "$OLD" || touch "$OLD"
+          sort -u "$NEW" > "${NEW}.sorted"
+          comm -23 "${NEW}.sorted" "$OLD" > results/${{ matrix.domain }}/new_subdomains.txt
           if [ -s results/${{ matrix.domain }}/new_subdomains.txt ]; then
             echo "has_new_subdomains=true" >> $GITHUB_OUTPUT
           else
@@ -179,28 +185,35 @@ jobs:
 
     
       - name: 'Notify Discord for ${{ matrix.domain }}'
+        if: steps.compare.outputs.has_new_subdomains == 'true'
         run: |
+              # 1. Capture today’s date and the current domain
           DATE=$(date +"%d-%m-%Y")
-          new_file="results/${{ matrix.domain }}/new_subdomains.txt"
-          if [ -f "$new_file" ]; then
-            count=$(wc -l < "$new_file")
-            if [ "$count" -gt 50 ]; then
-              echo "[+] New subdomains > 50 for ${{ matrix.domain }}. Sending file."
-              notify -bulk -id subscan -data "$new_file"
-            elif [ "$count" -gt 0 ]; then
-              echo "[+] New subdomains ≤ 50 for ${{ matrix.domain }}. Sending line by line."
-              {
-                echo "New subdomains for ${{ matrix.domain }}"
-                echo "Date - $DATE"
-                cat "$new_file"
-              } > tmp_message.txt
-              notify -id subscan -data tmp_message.txt
-            else
-              echo "No new subdomains for ${{ matrix.domain }}."
-            fi
+          DOMAIN="${{ matrix.domain }}"
+    
+            # 2. Point to the file containing only the NEW subdomains
+          FILE="results/${DOMAIN}/new_subdomains.txt"
+    
+             # 3. Count how many new subdomains we have
+          COUNT=$(wc -l < "$FILE")
+    
+                 # 4. If more than 50, send a separate date message, then send the file
+          if [ "$COUNT" -gt 50 ]; then
+                 # 4a. Send a simple text message with the date and domain heading
+            echo -e "🔔 New subdomains for ${DOMAIN}\n📅 Date: ${DATE}" | notify -id subscan
+                         # 4b. Send the actual list as a file attachment (bulk mode)
+            notify -bulk -id subscan -data "$FILE"
+    
+                    # 5. Else (1–50 new entries), package date + list into one bulk message
           else
-            echo "new_subdomains.txt not found for ${{ matrix.domain }}."
+            {
+              echo "🔔 New subdomains for ${DOMAIN}"
+              echo "📅 Date: ${DATE}"
+              echo
+              cat "$FILE"
+            } | notify -bulk -id subscan
           fi
+
              
 
       - name: Commit and Push Results for ${{ matrix.domain }}
