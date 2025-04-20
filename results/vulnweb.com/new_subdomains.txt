@@ -1,6 +1,0 @@
-localhost.payment.vulnweb.com
-rest.access.vulnweb.com
-testasp.backend.vulnweb.com
-testaspnet.blogs.vulnweb.com
-testaspnet.db.vulnweb.com
-testaspnet.my.vulnweb.com
