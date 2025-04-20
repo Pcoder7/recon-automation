@@ -181,10 +181,8 @@ jobs:
           else
             echo "has_new_subdomains=false" >> $GITHUB_OUTPUT
           fi  
-
-
-    
-      - name: 'Notify Discord for ${{ matrix.domain }}'
+  
+      - name: Notify Discord for ${{ matrix.domain }}
         if: steps.compare.outputs.has_new_subdomains == 'true'
         run: |
               # 1. Capture today’s date and the current domain
