@@ -17,6 +17,7 @@ rest.payment.vulnweb.com
 rest.review.vulnweb.com
 rest.vulnweb.com
 rest.web.vulnweb.com
+rest.www1.vulnweb.com
 restasp.vulnweb.com
 resttech.vulnweb.com
 sieb-web1.testphp.vulnweb.com
@@ -36,7 +37,9 @@ testaspmobile.vulnweb.com
 testaspnet.assets.vulnweb.com
 testaspnet.blogs.vulnweb.com
 testaspnet.db.vulnweb.com
+testaspnet.dmz.vulnweb.com
 testaspnet.my.vulnweb.com
+testaspnet.public.vulnweb.com
 testaspnet.vulnweb.com
 testaspx.vulnweb.com
 testhtml5.vulnweb.com

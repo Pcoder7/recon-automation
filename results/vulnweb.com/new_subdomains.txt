@@ -1,0 +1,3 @@
+rest.www1.vulnweb.com
+testaspnet.dmz.vulnweb.com
+testaspnet.public.vulnweb.com
