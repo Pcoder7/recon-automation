@@ -1,3 +1,10 @@
-rest.www1.vulnweb.com
-testaspnet.dmz.vulnweb.com
-testaspnet.public.vulnweb.com
+localhost.origin.vulnweb.com
+localhost.partner.vulnweb.com
+rest.content.vulnweb.com
+rest.final.vulnweb.com
+rest.o1.vulnweb.com
+rest.wordpress.vulnweb.com
+testasp.dashboard.vulnweb.com
+testasp.developer.vulnweb.com
+testasp.mobile.vulnweb.com
+testasp.temp.vulnweb.com
