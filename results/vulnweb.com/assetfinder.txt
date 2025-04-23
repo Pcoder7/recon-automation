@@ -14,6 +14,8 @@ virus.vulnweb.com
 www.virus.vulnweb.com
 viruswall.vulnweb.com
 www.vulnweb.com
+rest.proxy.vulnweb.com
+testasp.engineering.vulnweb.com
 testasp.mobile.vulnweb.com
 localhost.partner.vulnweb.com
 localhost.origin.vulnweb.com
