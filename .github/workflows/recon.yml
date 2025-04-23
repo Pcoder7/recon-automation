@@ -131,11 +131,6 @@ jobs:
           # Combine results and deduplicate into combined.txt
           cat results/${{ matrix.domain }}/subfinder.txt results/${{ matrix.domain }}/assetfinder.txt | sort -u > results/${{ matrix.domain }}/combined.txt
 
-          echo "Scanning Live domain: ${{ matrix.domain }}"
-          # Check for live hosts with httpx
-          cat results/${{ matrix.domain }}/combined.txt | httpx -silent -o results/${{ matrix.domain }}/live.txt
-          # Run cdncheck on combined.txt and output cdncheck.txt
-          cat results/${{ matrix.domain }}/combined.txt | cdncheck -r resolvers.txt -no-color -resp -retry 1 -output results/${{ matrix.domain }}/cdncheck.txt
       
       - name: Run puredns Bruteforce for ${{ matrix.domain }}
         run: |
@@ -164,14 +159,21 @@ jobs:
         run: |
           echo "Resolving enriched subdomains for ${{ matrix.domain }} via puredns"
           puredns resolve results/${{ matrix.domain }}/alterx_enriched.txt -r resolvers.txt --resolvers-trusted resolvers-trusted.txt --write results/${{ matrix.domain }}/alterx_duplicate.txt
+          # alterx duplicate sorting to alterx.txt
           cat results/${{ matrix.domain }}/alterx_duplicate.txt | sort -u > results/${{ matrix.domain }}/alterx.txt
+         
+          # combine and sort puredns_combined.txt with alterx.txt to get all resolved subdomain list
+          cat results/${{ matrix.domain }}/puredns_combined.txt results/${{ matrix.domain }}/alterx.txt | sort -u > results/${{ matrix.domain }}/all_resolved.txt
           rm results/${{ matrix.domain }}/alterx_duplicate.txt
-      
+          rm results/${{ matrix.domain }}/combined.txt
+
+
+        
       - name: Compare Results for ${{ matrix.domain }}
         id: compare
         run: |
           # Compare only the combined.txt file (which contains subdomain enumeration output)
-          NEW="results/${{ matrix.domain }}/combined.txt"
+          NEW="results/${{ matrix.domain }}/all_resolved.txt"
           OLD=$(mktemp)
           git show HEAD:$NEW 2>/dev/null | sort -u > "$OLD" || touch "$OLD"
           sort -u "$NEW" > "${NEW}.sorted"
@@ -212,7 +214,14 @@ jobs:
             } | notify -bulk -id subscan
           fi      
 
-           
+      - name: Scan live subdomains and cdncheck ${{ matrix.domain}}     
+        id: live_scan
+        run: |
+          echo "Scanning Live domain: ${{ matrix.domain }}"
+          # Check for live hosts with httpx
+          cat results/${{ matrix.domain }}/all_resolved.txt | httpx -sc -cl -title -vhost -no-color -threads 100 -silent -o results/${{ matrix.domain }}/all_resolved.txt
+          # Run cdncheck on combined.txt and output cdncheck.txt
+          cat results/${{ matrix.domain }}/all_resolved.txt | cdncheck  -no-color -output results/${{ matrix.domain }}/cdncheck.txt           
 
       - name: Commit and Push Results for ${{ matrix.domain }}
         run: |
