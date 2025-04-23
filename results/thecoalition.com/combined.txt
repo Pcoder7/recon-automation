@@ -1,7 +1,0 @@
-api.thecoalition.com
-blog.thecoalition.com
-files.thecoalition.com
-help.thecoalition.com
-platform.thecoalition.com
-thecoalition.com
-www.thecoalition.com
