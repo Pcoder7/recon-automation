@@ -1,3 +1,3 @@
-http://testasp.vulnweb.com [200] [3539] [acuforum forums] [vhost]
-http://testaspnet.vulnweb.com [200] [13920] [acublog news] [vhost]
 http://rest.vulnweb.com [200] [3556] [Invicti Vulnerable REST API]
+http://testasp.vulnweb.com [200] [3538] [acuforum forums] [vhost]
+http://testaspnet.vulnweb.com [200] [13920] [acublog news] [vhost]
