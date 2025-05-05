@@ -15,7 +15,6 @@ internal.thecoalition.com
 mma.thecoalition.com
 platform.thecoalition.com
 sre-test.thecoalition.com
-swissre-api.thecoalition.com
 swissre.thecoalition.com
 thecoalition.com
 www.thecoalition.com
