@@ -14,8 +14,9 @@ virus.vulnweb.com
 www.virus.vulnweb.com
 viruswall.vulnweb.com
 www.vulnweb.com
-localhost.eng.vulnweb.com
 testaspnet.drupal.vulnweb.com
+testasp.www1.vulnweb.com
+localhost.eng.vulnweb.com
 testaspnet.tech.vulnweb.com
 localhost.plugins.vulnweb.com
 testasp.logs.vulnweb.com
@@ -57,4 +58,3 @@ testaspnet.db.vulnweb.com
 testaspmobile.vulnweb.com
 rest.payment.vulnweb.com
 localhost.shop.vulnweb.com
-testasp.stage.vulnweb.com
