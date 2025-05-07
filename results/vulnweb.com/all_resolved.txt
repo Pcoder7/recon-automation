@@ -1,3 +1,4 @@
+http://vulnweb.com [200] [4018] [Acunetix Web Vulnerability Scanner - Test websites]
+http://testasp.vulnweb.com [200] [3538] [acuforum forums] [vhost]
+http://testaspnet.vulnweb.com [200] [13875] [acublog news] [vhost]
 http://rest.vulnweb.com [200] [3556] [Invicti Vulnerable REST API]
-http://testasp.vulnweb.com [200] [3540] [acuforum forums] [vhost]
-http://testaspnet.vulnweb.com [200] [13877] [acublog news] [vhost]
