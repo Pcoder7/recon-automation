@@ -1,6 +1,9 @@
-files.thecoalition.com
-platform.thecoalition.com
 www.thecoalition.com
 help.thecoalition.com
 blog.thecoalition.com
 api.thecoalition.com
+ap.thecoalition.com
+files.thecoalition.com
+admin-tools.thecoalition.com
+platform.thecoalition.com
+bb.thecoalition.com
