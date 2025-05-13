@@ -1,0 +1,3 @@
+testasp.vulnweb.com
+testaspnet.vulnweb.com
+vulnweb.com
