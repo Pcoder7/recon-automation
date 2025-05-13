@@ -9,10 +9,10 @@ demo-internal.thecoalition.com
 demo-platform.thecoalition.com
 docs.thecoalition.com
 files.thecoalition.com
-graphql.thecoalition.com
 help.thecoalition.com
 internal.thecoalition.com
 mma.thecoalition.com
 platform.thecoalition.com
+swissre-api.thecoalition.com
 swissre.thecoalition.com
 www.thecoalition.com

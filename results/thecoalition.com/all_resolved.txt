@@ -1,21 +1,23 @@
-https://www.thecoalition.com [301] [167] [301 Moved Permanently] [vhost]
-https://ap.thecoalition.com [302] [143] [302 Found] [vhost]
-https://help.thecoalition.com [301] [167] [301 Moved Permanently] [vhost]
-https://blog.thecoalition.com [301] [167] [301 Moved Permanently] [vhost]
-https://thecoalition.com [301] [167] [301 Moved Permanently] [vhost]
-https://demo-internal.thecoalition.com [301] [167] [301 Moved Permanently] [vhost]
-https://internal.thecoalition.com [302] [143] [302 Found] [vhost]
-https://sre-test.thecoalition.com [530] [16] [vhost]
-https://docs.thecoalition.com [403] [12] [vhost]
-https://mma.thecoalition.com [200] [8992] [vhost]
-https://bb.thecoalition.com [200] [8992] [vhost]
-https://acs.thecoalition.com [200] [8992] [vhost]
-https://api.thecoalition.com [404] [52] [vhost]
-https://platform.thecoalition.com [200] [8992] [vhost]
-https://demo-platform.thecoalition.com [200] [8992] [vhost]
-https://files.thecoalition.com [403] [243] [vhost]
-https://email-service.thecoalition.com [418] [37] [vhost]
-https://demo-email-service.thecoalition.com [404] [0] [vhost]
-https://demo-api.thecoalition.com [418] [37] [vhost]
-https://graphql.thecoalition.com [400] [406] [vhost]
-http://admin-tools.thecoalition.com [301] [167] [301 Moved Permanently]
+acs.thecoalition.com
+admin-tools.thecoalition.com
+ap.thecoalition.com
+api.thecoalition.com
+bb.thecoalition.com
+blog.thecoalition.com
+demo-api.thecoalition.com
+demo-email-service.thecoalition.com
+demo-internal.thecoalition.com
+demo-platform.thecoalition.com
+docs.thecoalition.com
+email-service.thecoalition.com
+files.thecoalition.com
+graphql.thecoalition.com
+help.thecoalition.com
+internal.thecoalition.com
+mma.thecoalition.com
+platform.thecoalition.com
+sre-test.thecoalition.com
+swissre-api.thecoalition.com
+swissre.thecoalition.com
+thecoalition.com
+www.thecoalition.com
