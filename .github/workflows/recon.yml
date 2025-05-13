@@ -205,14 +205,14 @@ jobs:
           # 4. If more than 50, send a header message, then the file
           if [ "$COUNT" -gt 50 ]; then
             # 4a. Send a text header with domain and date
-            echo -e "🔔 New subdomains for ${DOMAIN}\n📅 Date: ${DATE}" \
+            echo -e "🔔 $COUNT New subdomains for ${DOMAIN}\n📅 Date: ${DATE}" \
               | notify -id subscan
             # 4b. Send the full list as a file
             notify -bulk -id subscan -data "$FILE"
           else
             # 5. If 1–50 new entries, send one bulk message including header and list
             {
-              echo "🔔 New subdomains for ${DOMAIN}"
+              echo "🔔 $COUNT New subdomains for ${DOMAIN}"
               echo "📅 Date: ${DATE}"
               echo
               cat "$FILE"
@@ -232,7 +232,7 @@ jobs:
         run: |
           git config --global user.name 'github-actions[bot]'
           git config --global user.email 'github-actions[bot]@users.noreply.github.com'
-          git add results/${{ matrix.domain }}
+          git add results/${{ matrix.domain }}/all_resolved.txt
           git add results/${{ matrix.domain }}/new_subdomains.txt
           git commit -m "Update subdomain results for ${{ matrix.domain }}" || echo "No changes to commit"
           git pull --rebase origin main || echo "No remote changes"
