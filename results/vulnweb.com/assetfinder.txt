@@ -15,6 +15,9 @@ www.virus.vulnweb.com
 viruswall.vulnweb.com
 www.vulnweb.com
 rest.engineering.vulnweb.com
+testasp.s1.vulnweb.com
+rest.admin.vulnweb.com
+testaspnet.conf.vulnweb.com
 testaspnet.engineering.vulnweb.com
 testasp.prod.vulnweb.com
 localhost.manager.vulnweb.com
@@ -56,6 +59,3 @@ rest.wordpress.vulnweb.com
 rest.o1.vulnweb.com
 testaspnet.public.vulnweb.com
 rest.partner.vulnweb.com
-testaspnet.dmz.vulnweb.com
-rest.www1.vulnweb.com
-localhost.payment.vulnweb.com
