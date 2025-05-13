@@ -16,6 +16,5 @@ help.thecoalition.com
 internal.thecoalition.com
 mma.thecoalition.com
 platform.thecoalition.com
-swissre-api.thecoalition.com
 swissre.thecoalition.com
 www.thecoalition.com
