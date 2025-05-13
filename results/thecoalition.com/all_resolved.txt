@@ -10,6 +10,7 @@ demo-internal.thecoalition.com
 demo-platform.thecoalition.com
 docs.thecoalition.com
 email-service.thecoalition.com
+email.thecoalition.com
 files.thecoalition.com
 graphql.thecoalition.com
 help.thecoalition.com
