@@ -58,4 +58,3 @@ testasp.developer.vulnweb.com
 rest.wordpress.vulnweb.com
 rest.o1.vulnweb.com
 testaspnet.public.vulnweb.com
-rest.partner.vulnweb.com
