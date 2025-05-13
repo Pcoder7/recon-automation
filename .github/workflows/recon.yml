@@ -155,23 +155,43 @@ jobs:
         run: |
           cat results/${{ matrix.domain }}/bruteforce_result.txt results/${{ matrix.domain }}/resolved_combined.txt | sort -u > results/${{ matrix.domain }}/puredns_combined.txt
 
-      - name: Enrich Subdomains Using alterx for ${{ matrix.domain }}
+      - name: Enrich + Split+Resolve alterx_enriched
         run: |
-          echo "Enriching subdomain list for ${{ matrix.domain }} using alterx"
-          cat results/${{ matrix.domain }}/puredns_combined.txt | alterx -enrich > results/${{ matrix.domain }}/alterx_enriched.txt
+          D="${{ matrix.domain }}"
+          BASE="results/$D"
+          ENRICH="$BASE/alterx_enriched.txt"
+          
+          # 1. Enrich everything
+          cat "$BASE/puredns_combined.txt" | alterx -enrich > "$ENRICH"
 
-      - name: Resolve Alterx Enriched Subdomains Using puredns for ${{ matrix.domain }}
-        run: |
-          echo "Resolving enriched subdomains for ${{ matrix.domain }} via puredns"
-          puredns resolve results/${{ matrix.domain }}/alterx_enriched.txt -r resolvers.txt --resolvers-trusted resolvers-trusted.txt --write results/${{ matrix.domain }}/alterx_duplicate.txt
-          # alterx duplicate sorting to alterx.txt
-          cat results/${{ matrix.domain }}/alterx_duplicate.txt | sort -u > results/${{ matrix.domain }}/alterx.txt
-         
-          # combine and sort puredns_combined.txt with alterx.txt to get all resolved subdomain list
-          cat results/${{ matrix.domain }}/puredns_combined.txt results/${{ matrix.domain }}/alterx.txt | sort -u > results/${{ matrix.domain }}/all_resolved.txt
-          rm results/${{ matrix.domain }}/alterx_duplicate.txt
-          rm results/${{ matrix.domain }}/combined.txt
+          # 2. Prepare final alterx.txt
+          > "$BASE/alterx.txt"
 
+          # 3. If the enriched file is >50MB, split it
+          MAX=$((50 * 1024 * 1024))
+          SIZE=$(stat -c%s "$ENRICH")
+          if [ "$SIZE" -gt "$MAX" ]; then
+            echo "Large alterx_enriched.txt ($SIZE bytes), splitting into 50MB chunks"
+            split -b 50M "$ENRICH" "$BASE/alterx.part_"
+            PARTS=( "$BASE"/alterx_part_* )
+          else
+            PARTS=( "$ENRICH" )
+          fi
+
+          # 4. Resolve each part and append unique results
+          for PART in "${PARTS[@]}"; do
+            echo "Resolving subdomains in $(basename "$PART")"
+            puredns resolve "$PART" \
+              -r resolvers.txt --resolvers-trusted resolvers-trusted.txt \
+              --write tmp_resolved.txt
+            sort -u tmp_resolved.txt >> "$BASE/alterx.txt"
+          done
+
+          # 5. Clean up
+          rm -f tmp_resolved.txt "${PARTS[@]}"
+
+          # 6. Now combine with puredns_combined for final all_resolved
+          cat "$BASE/puredns_combined.txt" "$BASE/alterx.txt" | sort -u > "$BASE/all_resolved.txt"
 
         
       - name: Compare Results for ${{ matrix.domain }}
@@ -226,7 +246,7 @@ jobs:
           # Check for live hosts with httpx
           cat results/${{ matrix.domain }}/all_resolved.txt | httpx -sc -cl -title -vhost -no-color -threads 100 -silent -o results/${{ matrix.domain }}/all_resolved_httpx.txt
           # Run cdncheck on combined.txt and output cdncheck.txt
-          cat results/${{ matrix.domain }}/all_resolved.txt | cdncheck  -no-color -output results/${{ matrix.domain }}/cdncheck.txt           
+          #cat results/${{ matrix.domain }}/all_resolved.txt | cdncheck  -no-color -output results/${{ matrix.domain }}/cdncheck.txt           
 
       - name: Commit and Push Results for ${{ matrix.domain }}
         run: |
@@ -234,6 +254,7 @@ jobs:
           git config --global user.email 'github-actions[bot]@users.noreply.github.com'
           git add results/${{ matrix.domain }}/all_resolved.txt
           git add results/${{ matrix.domain }}/new_subdomains.txt
+           git add results/${{ matrix.domain }}/alterx.txt
           git commit -m "Update subdomain results for ${{ matrix.domain }}" || echo "No changes to commit"
           git pull --rebase origin main || echo "No remote changes"
           git push || echo "Push failed or no changes to push"
