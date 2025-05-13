@@ -16,6 +16,11 @@ jobs:
     steps:
       - name: Checkout Repository
         uses: actions/checkout@v3
+      - name: Checkout Repository
+        uses: actions/checkout@v3
+        with:
+          # Fetch full Git history so previous commits are available for comparison
+          fetch-depth: 0        
 
       - name: Generate Matrix from domains.txt
         id: set_matrix
