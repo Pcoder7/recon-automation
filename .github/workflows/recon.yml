@@ -173,7 +173,7 @@ jobs:
           if [ "$SIZE" -gt "$MAX" ]; then
             echo "Large alterx_enriched.txt ($SIZE bytes), splitting into 50MB chunks"
             split -b 50M "$ENRICH" "$BASE/alterx.part_"
-            PARTS=( "$BASE"/alterx_part_* )
+            PARTS=( "$BASE"/alterx.part_* )
           else
             PARTS=( "$ENRICH" )
           fi
