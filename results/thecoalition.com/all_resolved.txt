@@ -5,7 +5,6 @@ api.thecoalition.com
 bb.thecoalition.com
 blog.thecoalition.com
 demo-api.thecoalition.com
-demo-email-service.thecoalition.com
 demo-internal.thecoalition.com
 demo-platform.thecoalition.com
 docs.thecoalition.com
