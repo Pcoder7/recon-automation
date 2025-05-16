@@ -3,4 +3,5 @@ cdn.pixabay.com
 link.pixabay.com
 pixabay.com
 safesearch.pixabay.com
+snowplow-iglu.pixabay.com
 www.pixabay.com
