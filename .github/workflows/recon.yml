@@ -146,6 +146,8 @@ jobs:
           echo "Running puredns bruteforce for ${{ matrix.domain }}"
           cat n0kovo_subdomains_huge.txt | puredns bruteforce ${{ matrix.domain }} -r resolvers.txt --resolvers-trusted resolvers-trusted.txt --write results/${{ matrix.domain }}/bruteforce_res.txt
           cat results/${{ matrix.domain }}/bruteforce_res.txt | sort -u > results/${{ matrix.domain }}/bruteforce_result.txt
+          cat results/${{ matrix.domain }}/bruteforce_result.txt | wc -l
+          
           rm results/${{ matrix.domain }}/bruteforce_res.txt
           
       - name: Resolve Combined Results using puredns for ${{ matrix.domain }}
@@ -394,6 +396,7 @@ jobs:
             results/${{ matrix.domain }}/assetfinder.txt \
             results/${{ matrix.domain }}/amass.txt \
             results/${{ matrix.domain }}/all_resolved.txt \
+            results/${{ matrix.domain }}/puredns_combined.txt \
             results/${{ matrix.domain }}/all_IP.txt \
             results/${{ matrix.domain }}/no-cdn_IP.txt \
             results/${{ matrix.domain }}/smap.txt \
