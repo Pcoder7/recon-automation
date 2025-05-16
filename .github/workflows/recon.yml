@@ -312,7 +312,7 @@ jobs:
       
       - name: Port scan non-CDN with smap      
         run: |
-          smap -iL results/${{ matrix.domain }}/cdn_IP.txt -p80,443 -oP results/${{ matrix.domain }}/smap-cdn.txt      
+          smap -iL results/${{ matrix.domain }}/cdn-IP.txt -p80,443 -oP results/${{ matrix.domain }}/smap-cdn.txt      
     
       - name: Map IPs to subdomains (CDN)
         run: |
