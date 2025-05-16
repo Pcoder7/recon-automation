@@ -268,14 +268,15 @@ jobs:
               ip_map=load_ip_map(sys.argv[1])
               for raw in open(sys.argv[2]):
                   line=raw.strip()
-                  if not line: continue
-                  ip=line.rsplit(':',1)[0].rstrip(';')
-                  port=line.rsplit(':',1)[1].lstrip(';')
-                  try: ipaddress.ip_address(ip)
-                  except: continue
-                  for host in ip_map.get(ip,[]):
-                      print(f"{host}:{port}")
-    
+                  if not line or ':' not in line:
+                      # nothing to do on blank or malformed line
+                      print(f"[WARN] skipping malformed line {lineno}: '{line}'", file=sys.stderr)
+                      continue
+
+                  # isolate IP (everything before last colon) and port (after)
+                  ip_part, port = line.rsplit(':', 1)
+                  ip_part = ip_part.rstrip(';')
+                  port    = port.lstrip(';')    
           if __name__=='__main__':
               main()
           EOF
