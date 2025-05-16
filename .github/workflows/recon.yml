@@ -277,6 +277,11 @@ jobs:
                   ip_part, port = line.rsplit(':', 1)
                   ip_part = ip_part.rstrip(';')
                   port    = port.lstrip(';')    
+                  try: ipaddress.ip_address(ip)
+                  except: continue
+                  for host in ip_map.get(ip,[]):
+                      print(f"{host}:{port}")
+                      
           if __name__=='__main__':
               main()
           EOF
