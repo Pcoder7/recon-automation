@@ -396,6 +396,7 @@ jobs:
             results/${{ matrix.domain }}/assetfinder.txt \
             results/${{ matrix.domain }}/amass.txt \
             results/${{ matrix.domain }}/all_resolved.txt \
+             results/${{ matrix.domain }}/new_subdomains.txt \
             results/${{ matrix.domain }}/puredns_combined.txt \
             results/${{ matrix.domain }}/all_IP.txt \
             results/${{ matrix.domain }}/no-cdn_IP.txt \
