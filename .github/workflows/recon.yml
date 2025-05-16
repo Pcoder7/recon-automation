@@ -96,6 +96,7 @@ jobs:
           curl -sLo level1.txt https://raw.githubusercontent.com/trickest/wordlists/refs/heads/main/inventory/levels/level1.txt
           curl -sLo level2.txt https://raw.githubusercontent.com/trickest/wordlists/refs/heads/main/inventory/levels/level2.txt
           curl -sLo level3.txt https://raw.githubusercontent.com/trickest/wordlists/refs/heads/main/inventory/levels/level3.txt
+          curl -sLo n0kovo_subdomains_huge.txt https://raw.githubusercontent.com/n0kovo/n0kovo_subdomains/refs/heads/main/n0kovo_subdomains_huge.txt
           cat level1.txt level2.txt level3.txt > all_levels.txt          
       
       - name: Install notify
@@ -143,7 +144,7 @@ jobs:
       - name: Run puredns Bruteforce for ${{ matrix.domain }}
         run: |
           echo "Running puredns bruteforce for ${{ matrix.domain }}"
-          cat all_levels.txt | puredns bruteforce ${{ matrix.domain }} -r resolvers.txt --resolvers-trusted resolvers-trusted.txt --write results/${{ matrix.domain }}/bruteforce_res.txt
+          cat n0kovo_subdomains_huge.txt | puredns bruteforce ${{ matrix.domain }} -r resolvers.txt --resolvers-trusted resolvers-trusted.txt --write results/${{ matrix.domain }}/bruteforce_res.txt
           cat results/${{ matrix.domain }}/bruteforce_res.txt | sort -u > results/${{ matrix.domain }}/bruteforce_result.txt
           rm results/${{ matrix.domain }}/bruteforce_res.txt
           
