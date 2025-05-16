@@ -267,40 +267,35 @@ jobs:
                   sys.exit(1)
               ip_map=load_ip_map(sys.argv[1])
               for lineno, raw in enumerate(open(sys.argv[2]), start=1):
-                  line=raw.strip()
-                  if not line or ':' not in line:
-                      # nothing to do on blank or malformed line
-                      print(f"[WARN] skipping malformed line {lineno}: '{line}'", file=sys.stderr)
-                      continue
 
-                  # isolate IP (everything before last colon) and port (after)
-                  ip_part, port = line.rsplit(':', 1)
                   entry = raw.strip()
                   if not entry:
-                      continue
-                  # Support both "IP:PORT" and "IP"
-                  if ':' in entry:
-                      ip_part, port = entry.rsplit(':', 1)
-                      port = port.strip().lstrip(';')
+                      continue      
+                  parts = entry.split(':')
+                  if len(parts) == 1:
+                      ip_part = parts[0].rstrip(';')
+                      port = None
+                  elif len(parts) == 2:
+                      ip_part = parts[0].rstrip(';')
+                      port = parts[1].lstrip(';')
                   else:
-                      ip_part, port = entry, None
-                  ip_part = ip_part.rstrip(';')
-                  port    = port.lstrip(';')    
-                  try: 
+                      print(f"[WARN] skipping malformed line {lineno}: '{entry}'", file=sys.stderr)
+                      continue   
+
+                  try:
                       ipaddress.ip_address(ip_part)
-                  except ValueError: 
+                  except ValueError:
                       print(f"[WARN] invalid IP on line {lineno}: '{ip_part}'", file=sys.stderr)
-                      continue
+                      continue      
                   hosts = ip_map.get(ip_part,[])
                   if not hosts:
                       print(f"[WARN] no subdomain for IP {ip_part} (line {lineno})", file=sys.stderr)
-                      continue                      
-                  
+                      continue      
                   for host in hosts:
                       if port:
                           print(f"{host}:{port}")
                       else:
-                          print(f"{host}")
+                          print(host)
                       
           if __name__=='__main__':
               main()
