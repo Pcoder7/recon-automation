@@ -81,6 +81,14 @@ jobs:
           go install github.com/projectdiscovery/alterx/cmd/alterx@latest        
           # Install cdncheck
           go install -v github.com/projectdiscovery/cdncheck/cmd/cdncheck@latest
+          sudo apt-get update -qq
+          sudo apt-get install -y curl git jq unzip python3 python3-pip
+          # Install dnsx, cut-cdn, smap via Go
+          go install -v github.com/projectdiscovery/dnsx/cmd/dnsx@latest
+          go install -v github.com/projectdiscovery/cut-cdn/cmd/cut-cdn@latest
+          go install -v github.com/projectdiscovery/smap/cmd/smap@latest
+          pip3 install --no-cache-dir ipaddress
+          
           echo "$HOME/go/bin" >> $GITHUB_PATH
 
       - name: Download resolvers.txt
@@ -241,6 +249,94 @@ jobs:
               cat "$FILE"
             } | notify -bulk -id subscan
           fi      
+      - name: Create map_ip_to_host.py
+        run: |
+          cat << 'EOF' > map_ip_to_host.py
+          #!/usr/bin/env python3
+          import json, sys, ipaddress
+          from collections import defaultdict
+    
+          def load_ip_map(dnsx_file):
+              ip_map = defaultdict(list)
+              with open(dnsx_file) as f:
+                  for lineno, line in enumerate(f, 1):
+                      line=line.strip()
+                      if not line or not line.startswith('{'): continue
+                      try:
+                          obj=json.loads(line)
+                      except json.JSONDecodeError:
+                          continue
+                      host=obj.get('host')
+                      for ip in obj.get('a',[]):
+                          try:
+                              ipaddress.ip_address(ip)
+                              ip_map[ip].append(host)
+                          except ValueError:
+                              continue
+              return ip_map
+    
+          def main():
+              if len(sys.argv)!=3:
+                  print(f"Usage: {sys.argv[0]} <dnsx.json> <ip-port.txt>", file=sys.stderr)
+                  sys.exit(1)
+              ip_map=load_ip_map(sys.argv[1])
+              for raw in open(sys.argv[2]):
+                  line=raw.strip()
+                  if not line: continue
+                  ip=line.rsplit(':',1)[0].rstrip(';')
+                  port=line.rsplit(':',1)[1].lstrip(';')
+                  try: ipaddress.ip_address(ip)
+                  except: continue
+                  for host in ip_map.get(ip,[]):
+                      print(f"{host}:{port}")
+    
+          if __name__=='__main__':
+              main()
+          EOF
+          chmod +x map_ip_to_host.py
+      - name: Take all_resolved.txt and run dnsx
+        run: |
+          cat results/${{ matrix.domain }}/all_resolved.txt | dnsx -silent -json > results/${{ matrix.domain }}/dnsx.json
+    
+      - name: Extract all IPs
+        run: |
+          jq -R -r 'fromjson? | select(.a) | .a[]' results/${{ matrix.domain }}/dnsx.json > results/${{ matrix.domain }}/all_IP.txt
+    
+      - name: Filter non-CDN IPs
+        run: |
+          cat results/${{ matrix.domain }}/all_IP.txt | cut-cdn -active -silent -o results/${{ matrix.domain }}/no-cdn_IP.txt
+    
+      - name: Port scan non-CDN with smap
+        run: |
+          smap -iL results/${{ matrix.domain }}/no-cdn_IP.txt -oP results/${{ matrix.domain }}/smap.txt
+    
+      - name: Map IPs to subdomains (non-CDN)
+        run: |
+          ./map_ip_to_host.py results/${{ matrix.domain }}/dnsx.json results/${{ matrix.domain }}/smap.txt > results/${{ matrix.domain }}/sub-no-cdn.txt
+    
+      - name: HTTP probe non-CDN subdomains
+        run: |
+          cat results/${{ matrix.domain }}/sub-no-cdn.txt | cut -d: -f1 | sort -u \
+            | httpx -l - -ports 80,443 -o results/${{ matrix.domain }}/httpx-no-cdn.txt
+    
+      - name: Identify CDN IPs
+        run: |
+          grep -Fxv -f results/${{ matrix.domain }}/no-cdn_IP.txt results/${{ matrix.domain }}/all_IP.txt \
+            | sort -u > results/${{ matrix.domain }}/cdn-IP.txt
+    
+      - name: Map IPs to subdomains (CDN)
+        run: |
+          ./map_ip_to_host.py results/${{ matrix.domain }}/dnsx.json results/${{ matrix.domain }}/cdn-IP.txt > results/${{ matrix.domain }}/sub-with-cdn.txt
+    
+      - name: HTTP probe CDN subdomains
+        run: |
+          httpx -l results/${{ matrix.domain }}/sub-with-cdn.txt -ports 80,443 \
+            -o results/${{ matrix.domain }}/httpx-cdn.txt
+    
+      - name: Combine all HTTPX results
+        run: |
+          cat results/${{ matrix.domain }}/httpx-no-cdn.txt results/${{ matrix.domain }}/httpx-cdn.txt \
+            | sort -u > results/${{ matrix.domain }}/all_httpx.txt          
 
       - name: Scan live subdomains and cdncheck ${{ matrix.domain}}     
         id: live_scan
@@ -262,6 +358,15 @@ jobs:
             results/${{ matrix.domain }}/alterx.txt \
             results/${{ matrix.domain }}/all_resolved.txt \
             results/${{ matrix.domain }}/new_subdomains.txt
+            results/${{ matrix.domain }}/all_IP.txt \
+            results/${{ matrix.domain }}/no-cdn_IP.txt \
+            results/${{ matrix.domain }}/smap.txt \
+            results/${{ matrix.domain }}/sub-no-cdn.txt \
+            results/${{ matrix.domain }}/httpx-no-cdn.txt \
+            results/${{ matrix.domain }}/cdn-IP.txt \
+            results/${{ matrix.domain }}/sub-with-cdn.txt \
+            results/${{ matrix.domain }}/httpx-cdn.txt \
+            results/${{ matrix.domain }}/all_httpx.txt          
           # Commit if there are changes
           git diff --cached --quiet || git commit -m "Update subdomain results for ${{ matrix.domain }}"
 
