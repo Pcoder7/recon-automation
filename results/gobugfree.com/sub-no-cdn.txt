@@ -1,0 +1,12 @@
+autodiscover.gobugfree.com:80
+autodiscover.gobugfree.com:80
+autodiscover.mail.gobugfree.com:80
+autodiscover.mail.gobugfree.com:80
+autodiscover.gobugfree.com:80
+autodiscover.mail.gobugfree.com:80
+autodiscover.gobugfree.com:80
+autodiscover.mail.gobugfree.com:80
+autodiscover.mail.gobugfree.com:80
+autodiscover.mail.gobugfree.com:80
+autodiscover.mail.gobugfree.com:80
+autodiscover.mail.gobugfree.com:80

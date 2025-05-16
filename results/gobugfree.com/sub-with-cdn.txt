@@ -1,0 +1,16 @@
+app.gobugfree.com:443
+app.gobugfree.com:80
+backend.gobugfree.com:443
+backend.gobugfree.com:80
+cms.gobugfree.com:443
+cms.gobugfree.com:80
+demo.gobugfree.com:443
+demo.gobugfree.com:80
+gobugfree.com:443
+gobugfree.com:80
+id.gobugfree.com:443
+id.gobugfree.com:80
+media.gobugfree.com:443
+media.gobugfree.com:80
+www.gobugfree.com:443
+www.gobugfree.com:80
