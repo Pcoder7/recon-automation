@@ -303,7 +303,7 @@ jobs:
       - name: HTTP probe non-CDN subdomains
         run: |
           cat results/${{ matrix.domain }}/sub-no-cdn.txt | cut -d: -f1 | sort -u \
-            | httpx -sc -cl -title -vhost -no-color -threads 100 -silent -o results/${{ matrix.domain }}/httpx-no-cdn.txt
+            | httpx -sc -cl -title -vhost -no-color -threads 100 -no-color -silent -o results/${{ matrix.domain }}/httpx-no-cdn.txt
     
       - name: Identify CDN IPs
         run: |
@@ -320,7 +320,7 @@ jobs:
     
       - name: HTTP probe CDN subdomains
         run: |
-          httpx -l results/${{ matrix.domain }}/sub-with-cdn.txt -ports 80,443 -sc -cl -title -vhost -no-color -threads 100 -silent \
+          httpx -l results/${{ matrix.domain }}/sub-with-cdn.txt -ports 80,443 -sc -cl -title -vhost -no-color -threads 100 -no-color -silent \
             -o results/${{ matrix.domain }}/httpx-cdn.txt
     
       - name: Combine all HTTPX results
@@ -347,7 +347,7 @@ jobs:
             results/${{ matrix.domain }}/puredns_combined.txt \
             results/${{ matrix.domain }}/alterx.txt \
             results/${{ matrix.domain }}/all_resolved.txt \
-            results/${{ matrix.domain }}/new_subdomains.txt
+            results/${{ matrix.domain }}/new_subdomains.txt \
             results/${{ matrix.domain }}/all_IP.txt \
             results/${{ matrix.domain }}/no-cdn_IP.txt \
             results/${{ matrix.domain }}/smap.txt \
