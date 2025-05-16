@@ -1,0 +1,6 @@
+deeplink.fintual.com:443
+deeplink.fintual.com:80
+link.fintual.com:443
+link.fintual.com:80
+otel.fintual.com:443
+otel.fintual.com:80
