@@ -8,7 +8,6 @@ demo-api.thecoalition.com
 demo-email-service.thecoalition.com
 demo-internal.thecoalition.com
 demo-platform.thecoalition.com
-docgen.thecoalition.com
 docs.thecoalition.com
 email-service.thecoalition.com
 email.thecoalition.com
@@ -19,7 +18,6 @@ internal.thecoalition.com
 mma.thecoalition.com
 platform.thecoalition.com
 sre-test.thecoalition.com
-staging2-api.thecoalition.com
 swissre-api.thecoalition.com
 swissre.thecoalition.com
 thecoalition.com
