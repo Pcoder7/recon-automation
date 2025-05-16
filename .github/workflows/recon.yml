@@ -302,7 +302,7 @@ jobs:
     
       - name: HTTP probe non-CDN subdomains
         run: |
-          cat results/${{ matrix.domain }}/sub-no-cdn.txt | cut -d: -f1 | sort -u \
+          cat results/${{ matrix.domain }}/sub-no-cdn.txt | sort -u \
             | httpx -sc -cl -title -vhost -no-color -threads 100 -no-color -silent -o results/${{ matrix.domain }}/httpx-no-cdn.txt
     
       - name: Identify CDN IPs
@@ -310,7 +310,7 @@ jobs:
           grep -Fxv -f results/${{ matrix.domain }}/no-cdn_IP.txt results/${{ matrix.domain }}/all_IP.txt \
             | sort -u > results/${{ matrix.domain }}/cdn-IP.txt
       
-      - name: Port scan non-CDN with smap      
+      - name: Port scan IPs with CDN with smap      
         run: |
           smap -iL results/${{ matrix.domain }}/cdn-IP.txt -p80,443 -oP results/${{ matrix.domain }}/smap-cdn.txt      
     
