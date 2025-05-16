@@ -289,9 +289,18 @@ jobs:
                   try: 
                       ipaddress.ip_address(ip_part)
                   except ValueError: 
+                      print(f"[WARN] invalid IP on line {lineno}: '{ip_part}'", file=sys.stderr)
                       continue
-                  for host in ip_map.get(ip_part,[]):
-                      print(f"{host}:{port}")
+                  hosts = ip_map.get(ip_part,[])
+                  if not hosts:
+                      print(f"[WARN] no subdomain for IP {ip_part} (line {lineno})", file=sys.stderr)
+                      continue                      
+                  
+                  for host in hosts:
+                      if port:
+                          print(f"{host}:{port}")
+                      else:
+                          print(f"{host}")
                       
           if __name__=='__main__':
               main()
