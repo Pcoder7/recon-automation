@@ -1,6 +1,8 @@
-demo.gobugfree.com
-id.gobugfree.com
 www.gobugfree.com
+analytics.gobugfree.com
 media.gobugfree.com
 cdn.gobugfree.com
+demo.gobugfree.com
+gobugfree.com
+id.gobugfree.com
 app.gobugfree.com
