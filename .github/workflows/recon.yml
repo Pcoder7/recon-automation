@@ -249,6 +249,7 @@ jobs:
               cat "$FILE"
             } | notify -bulk -id subscan
           fi      
+      
       - name: Create map_ip_to_host.py
         run: |
           cat << 'EOF' > map_ip_to_host.py
@@ -317,7 +318,7 @@ jobs:
       - name: HTTP probe non-CDN subdomains
         run: |
           cat results/${{ matrix.domain }}/sub-no-cdn.txt | cut -d: -f1 | sort -u \
-            | httpx -l - -ports 80,443 -o results/${{ matrix.domain }}/httpx-no-cdn.txt
+            | httpx -silent -o results/${{ matrix.domain }}/httpx-no-cdn.txt
     
       - name: Identify CDN IPs
         run: |
