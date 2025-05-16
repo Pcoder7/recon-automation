@@ -71,10 +71,10 @@ jobs:
           # Install assetfinder
           go install -v github.com/tomnomnom/assetfinder@latest
           # Install Amass v3.23.3 (uncomment if needed)
-          # curl -LO https://github.com/OWASP/Amass/releases/download/v3.23.3/amass_linux_amd64_v3.23.3.zip
-          # unzip amass_linux_amd64_v3.23.3.zip
-          # sudo mv amass_linux_amd64_v3.23.3/amass /usr/local/bin/
-          # rm -rf amass_linux_amd64_v3.23.3*
+          curl -LO https://github.com/OWASP/Amass/releases/download/v3.23.3/amass_linux_amd64_v3.23.3.zip
+          unzip amass_linux_amd64_v3.23.3.zip
+          sudo mv amass_linux_amd64_v3.23.3/amass /usr/local/bin/
+          rm -rf amass_linux_amd64_v3.23.3*
           # Install puredns (v2)
           go install github.com/d3mondev/puredns/v2@latest
           # Install alterx for subdomain permutation & enrichment
@@ -135,7 +135,7 @@ jobs:
           # Run assetfinder
           assetfinder --subs-only "${{ matrix.domain }}" > results/${{ matrix.domain }}/assetfinder.txt
           # Uncomment to run Amass if needed:
-          # amass enum -d "${{ matrix.domain }}" -o results/${{ matrix.domain }}/amass.txt
+          amass enum -d "${{ matrix.domain }}" -passive -noalts -nolocaldb -o results/${{ matrix.domain }}/amass.txt
           # Combine results and deduplicate into combined.txt
           cat results/${{ matrix.domain }}/subfinder.txt results/${{ matrix.domain }}/assetfinder.txt | sort -u > results/${{ matrix.domain }}/combined.txt
 
@@ -255,18 +255,21 @@ jobs:
         run: |
           git config --global user.name 'github-actions[bot]'
           git config --global user.email 'github-actions[bot]@users.noreply.github.com'
-          git add results/${{ matrix.domain }}/all_resolved.txt
-          git add results/${{ matrix.domain }}/new_subdomains.txt
+          git add \
+            results/${{ matrix.domain }}/subfinder.txt \
+            results/${{ matrix.domain }}/assetfinder.txt \
+            results/${{ matrix.domain }}/puredns_combined.txt \
+            results/${{ matrix.domain }}/alterx.txt \
+            results/${{ matrix.domain }}/all_resolved.txt \
+            results/${{ matrix.domain }}/new_subdomains.txt
           # Commit if there are changes
           git diff --cached --quiet || git commit -m "Update subdomain results for ${{ matrix.domain }}"
 
           # Pull with autostash to handle any leftover changes
-          git pull --rebase --autostash origin main || echo "No remote changes"
-
+          git pull --rebase --autostash origin main 
 
           # Push our new commit
-          git push || echo "Push failed or no changes to push"
-
+          git push 
 
   trigger_nuclei:
     runs-on: ubuntu-latest
