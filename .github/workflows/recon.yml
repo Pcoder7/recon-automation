@@ -73,7 +73,7 @@ jobs:
           # Install Amass v3.23.3 (uncomment if needed)
           curl -LO https://github.com/owasp-amass/amass/releases/download/v3.23.3/amass_Linux_amd64.zip
           unzip amass_Linux_amd64.zip
-          sudo mv amass_Linux_amd64.zip/amass /usr/local/bin/
+          sudo mv amass_Linux_amd64/amass /usr/local/bin/
           rm -rf amass_Linux_amd64.zip*
           # Install puredns (v2)
           go install github.com/d3mondev/puredns/v2@latest
