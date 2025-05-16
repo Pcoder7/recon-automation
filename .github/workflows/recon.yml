@@ -275,6 +275,15 @@ jobs:
 
                   # isolate IP (everything before last colon) and port (after)
                   ip_part, port = line.rsplit(':', 1)
+                  entry = raw.strip()
+                  if not entry:
+                      continue
+                  # Support both "IP:PORT" and "IP"
+                  if ':' in entry:
+                      ip_part, port = entry.rsplit(':', 1)
+                      port = port.strip().lstrip(';')
+                  else:
+                      ip_part, port = entry, None
                   ip_part = ip_part.rstrip(';')
                   port    = port.lstrip(';')    
                   try: 
