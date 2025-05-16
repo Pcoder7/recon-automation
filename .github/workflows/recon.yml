@@ -291,79 +291,96 @@ jobs:
       - name: Filter non-CDN IPs
         run: |
           cat results/${{ matrix.domain }}/all_IP.txt | cut-cdn -active -silent -o results/${{ matrix.domain }}/no-cdn_IP.txt
-    
+
       - name: Port scan non-CDN with smap
         run: |
-          smap -iL results/${{ matrix.domain }}/no-cdn_IP.txt -oP results/${{ matrix.domain }}/smap.txt
+          if [ -s results/${{ matrix.domain }}/no-cdn_IP.txt ]; then
+            smap -iL results/${{ matrix.domain }}/no-cdn_IP.txt \
+                 -o results/${{ matrix.domain }}/smap.txt
+          else
+            echo "[INFO] no non-CDN IPs to scan" >&2
+            touch results/${{ matrix.domain }}/smap.txt
+          fi
     
       - name: Map IPs to subdomains (non-CDN)
         run: |
-          ./map_ip_to_host.py results/${{ matrix.domain }}/dnsx.json results/${{ matrix.domain }}/smap.txt > results/${{ matrix.domain }}/sub-no-cdn.txt
+          if [ -s results/${{ matrix.domain }}/smap.txt ]; then
+            ./map_ip_to_host.py \
+              results/${{ matrix.domain }}/dnsx.json \
+              results/${{ matrix.domain }}/smap.txt \
+              > results/${{ matrix.domain }}/sub-no-cdn.txt
+          else
+            echo "[INFO] no smap results to map" >&2
+            touch results/${{ matrix.domain }}/sub-no-cdn.txt
+          fi
     
       - name: HTTP probe non-CDN subdomains
         run: |
-          cat results/${{ matrix.domain }}/sub-no-cdn.txt | sort -u \
-            | httpx -sc -cl -title -vhost -no-color -threads 100 -no-color -silent -o results/${{ matrix.domain }}/httpx-no-cdn.txt
+          if [ -s results/${{ matrix.domain }}/sub-no-cdn.txt ]; then
+            cat results/${{ matrix.domain }}/sub-no-cdn.txt | sort -u \
+              | httpx -sc -cl -title -fr -vhost -no-color -threads 100 -silent -o results/${{ matrix.domain }}/httpx-no-cdn.txt 
+          else
+            echo "[INFO] no non-CDN subdomains to probe" >&2
+            touch results/${{ matrix.domain }}/httpx-no-cdn.txt
+          fi
     
       - name: Identify CDN IPs
         run: |
-          grep -Fxv -f results/${{ matrix.domain }}/no-cdn_IP.txt results/${{ matrix.domain }}/all_IP.txt \
-            | sort -u > results/${{ matrix.domain }}/cdn-IP.txt
-      
-      - name: Port scan IPs with CDN with smap      
-        run: |
-          smap -iL results/${{ matrix.domain }}/cdn-IP.txt -p80,443 -oP results/${{ matrix.domain }}/smap-cdn.txt      
+          if [ -s results/${{ matrix.domain }}/no-cdn_IP.txt ]; then
+            grep -Fxv -f results/${{ matrix.domain }}/no-cdn_IP.txt \
+              results/${{ matrix.domain }}/all_IP.txt \
+              | sort -u > results/${{ matrix.domain }}/cdn-IP.txt
+          else
+            echo "[INFO] no non-CDN IPs, all are CDN" >&2
+            sort -u results/${{ matrix.domain }}/all_IP.txt > results/${{ matrix.domain }}/cdn-IP.txt
+          fi
     
       - name: Map IPs to subdomains (CDN)
         run: |
-          ./map_ip_to_host.py results/${{ matrix.domain }}/dnsx.json results/${{ matrix.domain }}/smap-cdn.txt | sort -u > results/${{ matrix.domain }}/sub-with-cdn.txt
+          if [ -s results/${{ matrix.domain }}/cdn-IP.txt ]; then
+            ./map_ip_to_host.py \
+              results/${{ matrix.domain }}/dnsx.json \
+              results/${{ matrix.domain }}/cdn-IP.txt \
+              > results/${{ matrix.domain }}/sub-with-cdn.txt
+          else
+            echo "[INFO] no CDN IPs to map" >&2
+            touch results/${{ matrix.domain }}/sub-with-cdn.txt
+          fi
     
       - name: HTTP probe CDN subdomains
         run: |
-          httpx -l results/${{ matrix.domain }}/sub-with-cdn.txt -ports https:80,443 -sc -cl -title -vhost -no-color -threads 100 -no-color -silent \
-            -o results/${{ matrix.domain }}/httpx-cdn.txt
+          if [ -s results/${{ matrix.domain }}/sub-with-cdn.txt ]; then
+            httpx -l results/${{ matrix.domain }}/sub-with-cdn.txt \
+              -p https:80,443 -sc -cl -title -fr -vhost -no-color -threads 100 -silent \
+              -o results/${{ matrix.domain }}/httpx-cdn.txt
+          else
+            echo "[INFO] no CDN subdomains to probe" >&2
+            touch results/${{ matrix.domain }}/httpx-cdn.txt
+          fi
     
       - name: Combine all HTTPX results
         run: |
           cat results/${{ matrix.domain }}/httpx-no-cdn.txt results/${{ matrix.domain }}/httpx-cdn.txt \
-            | sort -u > results/${{ matrix.domain }}/all_httpx.txt          
-      
-      - name: Scan live subdomains and cdncheck ${{ matrix.domain}}     
-        id: live_scan
-        run: |
-          echo "Scanning Live domain: ${{ matrix.domain }}"
-          # Check for live hosts with httpx
-          cat results/${{ matrix.domain }}/all_resolved.txt | httpx -sc -cl -title -vhost -no-color -threads 100 -silent -o results/${{ matrix.domain }}/all_resolved_httpx.txt
-          # Run cdncheck on combined.txt and output cdncheck.txt
-          #cat results/${{ matrix.domain }}/all_resolved.txt | cdncheck  -no-color -output results/${{ matrix.domain }}/cdncheck.txt           
-      
+            | sort -u > results/${{ matrix.domain }}/all_httpx.txt
+    
       - name: Commit and Push Results for ${{ matrix.domain }}
         run: |
           git config --global user.name 'github-actions[bot]'
           git config --global user.email 'github-actions[bot]@users.noreply.github.com'
-          git add \
-            results/${{ matrix.domain }}/subfinder.txt \
-            results/${{ matrix.domain }}/assetfinder.txt \
-            results/${{ matrix.domain }}/puredns_combined.txt \
-            results/${{ matrix.domain }}/alterx.txt \
-            results/${{ matrix.domain }}/all_resolved.txt \
-            results/${{ matrix.domain }}/new_subdomains.txt \
+          git add results/${{ matrix.domain }}/dnsx.json \
             results/${{ matrix.domain }}/all_IP.txt \
             results/${{ matrix.domain }}/no-cdn_IP.txt \
             results/${{ matrix.domain }}/smap.txt \
-            results/${{ matrix.domain }}/smap-cdn.txt \
             results/${{ matrix.domain }}/sub-no-cdn.txt \
             results/${{ matrix.domain }}/httpx-no-cdn.txt \
             results/${{ matrix.domain }}/cdn-IP.txt \
             results/${{ matrix.domain }}/sub-with-cdn.txt \
             results/${{ matrix.domain }}/httpx-cdn.txt \
-            results/${{ matrix.domain }}/all_httpx.txt          
-          # Commit if there are changes
-          git diff --cached --quiet || git commit -m "Update subdomain results for ${{ matrix.domain }}"
-          # Pull with autostash to handle any leftover changes
-          git pull --rebase --autostash origin main 
-          # Push our new commit
-          git push 
+            results/${{ matrix.domain }}/all_httpx.txt
+          git diff --cached --quiet || git commit -m "Update live scan for ${{ matrix.domain }}"
+          git pull --rebase --autostash origin main
+          git push
+          
   trigger_nuclei:
     runs-on: ubuntu-latest
     needs: scan
