@@ -1,2 +1,0 @@
-http://autodiscover.mail.gobugfree.com [301] [0] [vhost]
-http://autodiscover.gobugfree.com [301] [0] [vhost]
