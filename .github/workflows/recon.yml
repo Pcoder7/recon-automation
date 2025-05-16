@@ -334,7 +334,7 @@ jobs:
             ./map_ip_to_host.py \
               results/${{ matrix.domain }}/dnsx.json \
               results/${{ matrix.domain }}/smap.txt \
-              | sort -u > results/${{ matrix.domain }}/sub-no-cdn.txt
+              |sort -u > results/${{ matrix.domain }}/sub-no-cdn.txt
           else
             echo "[INFO] no smap results to map" >&2
             touch results/${{ matrix.domain }}/sub-no-cdn.txt
@@ -355,10 +355,10 @@ jobs:
           if [ -s results/${{ matrix.domain }}/no-cdn_IP.txt ]; then
             grep -Fxv -f results/${{ matrix.domain }}/no-cdn_IP.txt \
               results/${{ matrix.domain }}/all_IP.txt \
-              | sort -u > results/${{ matrix.domain }}/cdn-IP.txt
+              > results/${{ matrix.domain }}/cdn-IP.txt
           else
             echo "[INFO] no non-CDN IPs, all are CDN" >&2
-            sort -u results/${{ matrix.domain }}/all_IP.txt > results/${{ matrix.domain }}/cdn-IP.txt
+            cat results/${{ matrix.domain }}/all_IP.txt > results/${{ matrix.domain }}/cdn-IP.txt
           fi
     
       - name: Map IPs to subdomains (CDN)
