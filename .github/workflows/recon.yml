@@ -266,7 +266,7 @@ jobs:
                   print(f"Usage: {sys.argv[0]} <dnsx.json> <ip-port.txt>", file=sys.stderr)
                   sys.exit(1)
               ip_map=load_ip_map(sys.argv[1])
-              for raw in open(sys.argv[2]):
+              for lineno, raw in enumerate(open(sys.argv[2]), start=1):
                   line=raw.strip()
                   if not line or ':' not in line:
                       # nothing to do on blank or malformed line
@@ -377,6 +377,7 @@ jobs:
             results/${{ matrix.domain }}/subfinder.txt \
             results/${{ matrix.domain }}/assetfinder.txt \
             results/${{ matrix.domain }}/amass.txt \
+            results/${{ matrix.domain }}/all_resolved.txt \
             results/${{ matrix.domain }}/all_IP.txt \
             results/${{ matrix.domain }}/no-cdn_IP.txt \
             results/${{ matrix.domain }}/smap.txt \
