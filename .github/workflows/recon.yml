@@ -320,7 +320,7 @@ jobs:
     
       - name: HTTP probe CDN subdomains
         run: |
-          httpx -l results/${{ matrix.domain }}/sub-with-cdn.txt -ports 80,443 -sc -cl -title -vhost -no-color -threads 100 -no-color -silent \
+          httpx -l results/${{ matrix.domain }}/sub-with-cdn.txt -ports https:80,443 -sc -cl -title -vhost -no-color -threads 100 -no-color -silent \
             -o results/${{ matrix.domain }}/httpx-cdn.txt
     
       - name: Combine all HTTPX results
