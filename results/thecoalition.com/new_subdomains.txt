@@ -1,2 +1,0 @@
-docgen.thecoalition.com
-staging2-api.thecoalition.com
