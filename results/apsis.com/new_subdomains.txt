@@ -1,2 +1,0 @@
-soc-files.apsis.com
-tr.pro-test.apsis.com
