@@ -1,7 +1,5 @@
 apsis.com
-cdnm.apsis.com
 customers.apsis.com
-customweb1.apsis.com
 d7.apsis.com
 dev.apsis.com
 developer.apsis.com
@@ -17,6 +15,5 @@ one-material.apsis.com
 smtp.apsis.com
 soc-files.apsis.com
 tools.apsis.com
-tr.pro-test.apsis.com
 www.apsis.com
 xml.apsis.com
