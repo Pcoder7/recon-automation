@@ -19,9 +19,9 @@ git.fintual.com
 framer.fintual.com
 capi.fintual.com
 scim.1password.fintual.com
+id.fintual.com
 design.fintual.com
 fintual.com
-id.fintual.com
 docs.fintual.com
 designtest.fintual.com
 fintual.com
