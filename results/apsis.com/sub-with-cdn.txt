@@ -8,7 +8,6 @@ help.apsis.com
 jobs.apsis.com
 knowledge.apsis.com
 smtp.apsis.com
-soc-files.apsis.com
 tools.apsis.com
 tr.pro-test.apsis.com
 www.apsis.com
