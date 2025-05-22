@@ -1,2 +1,0 @@
-localhost.vulnweb.com
-rest.vulnweb.com
