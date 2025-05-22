@@ -1,1 +1,2 @@
-d7.apsis.com
+cdnm.apsis.com
+customweb1.apsis.com
