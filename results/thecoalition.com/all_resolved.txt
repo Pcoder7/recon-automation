@@ -20,7 +20,6 @@ mma.thecoalition.com
 platform.thecoalition.com
 sre-test.thecoalition.com
 staging2-api.thecoalition.com
-swissre-api.thecoalition.com
 swissre.thecoalition.com
 thecoalition.com
 www.thecoalition.com
