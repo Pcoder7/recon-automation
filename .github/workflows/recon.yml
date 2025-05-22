@@ -470,12 +470,22 @@ jobs:
           cat results/${{ matrix.domain }}/httpx-no-cdn.txt results/${{ matrix.domain }}/httpx-cdn.txt \
             | sort -u > results/${{ matrix.domain }}/all_httpx.txt
       
-      - name: Upload all_resolved.txt for HTTPX downstream
-        uses: actions/upload-artifact@v4
-        with:
-          name: recon-results-${{ matrix.domain }}
-          path: results/${{ matrix.domain }}/all_resolved.txt
-          if-no-files-found: error
+
+      - name: Trigger httpx-recon workflow in another repo
+        env:
+          PAT_TOKEN: ${{ secrets.PAT_TOKEN }}
+        run: |
+          curl -X POST \
+            -H "Accept: application/vnd.github.v3+json" \
+            -H "Authorization: Bearer $PAT_TOKEN" \
+            https://api.github.com/repos/Pcoder7/httpx-recon/actions/workflows/live_httpx.yml/dispatches \
+            -d '{
+              "ref": "main",
+              "inputs": {
+                "artifact_name": "recon-results-${{ matrix.domain }}",
+                "caller_repo": "${{ github.repository }}"
+              }
+            }'
             
     
       - name: Commit and Push Results for ${{ matrix.domain }}
