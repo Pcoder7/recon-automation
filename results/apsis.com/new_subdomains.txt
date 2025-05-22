@@ -1,3 +1,0 @@
-cdnm.apsis.com
-customweb1.apsis.com
-tr.pro-test.apsis.com
