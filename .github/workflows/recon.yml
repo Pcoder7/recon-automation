@@ -76,7 +76,7 @@ jobs:
       - name: Install Tools
         run: |
 
-           # Install httpx
+          # Install httpx
           if ! command -v httpx >/dev/null; then
             echo "Installing httpx…"
             go install -v github.com/projectdiscovery/httpx/cmd/httpx@latest
@@ -102,7 +102,7 @@ jobs:
             echo "subfinder already in cache"
           fi        
 
-             # Install assetfinder
+          # Install assetfinder
              
           if ! command -v assetfinder >/dev/null; then
             echo "Installing assetfinder…"
@@ -111,7 +111,7 @@ jobs:
             echo "assetfinder already in cache"
           fi        
 
-           # Install puredns (v2)      
+          # Install puredns (v2)      
            
           if ! command -v puredns >/dev/null; then
             echo "Installing puredns…"
@@ -120,14 +120,15 @@ jobs:
             echo "puredns already in cache"
           fi  
 
-           # Install alterx for subdomain permutation & enrichment
+          # Install alterx for subdomain permutation & enrichment
           if ! command -v alterx >/dev/null; then
             echo "Installing alterx…"
             go install github.com/projectdiscovery/alterx/cmd/alterx@latest 
           else
             echo "alterx already in cache"
           fi  
-                     # Install cdncheck
+          
+          # Install cdncheck
           if ! command -v cdncheck >/dev/null; then
             echo "Installing cdncheck…"
             go install -v github.com/projectdiscovery/cdncheck/cmd/cdncheck@latest
@@ -135,7 +136,7 @@ jobs:
             echo "cdncheck already in cache"
           fi  
 
-            # Installing dnsx
+          # Installing dnsx
           if ! command -v dnsx >/dev/null; then
             echo "Installing dnsx…"
             go install -v github.com/projectdiscovery/dnsx/cmd/dnsx@latest
@@ -143,7 +144,7 @@ jobs:
             echo "dnsx already in cache"
           fi  
 
-               # Installing cut-cdn
+          # Installing cut-cdn
           if ! command -v cut-cdn >/dev/null; then
             echo "Installing cut-cdn…"
             go install github.com/ImAyrix/cut-cdn@latest
@@ -151,7 +152,7 @@ jobs:
             echo "cut-cdn already in cache"
           fi       
 
-           # Installing smap
+          # Installing smap
           if ! command -v smap >/dev/null; then
             echo "Installing smap…"
             go install -v github.com/s0md3v/smap/cmd/smap@latest
@@ -164,11 +165,11 @@ jobs:
           unzip amass_Linux_amd64.zip
           sudo mv amass_Linux_amd64/amass /usr/local/bin/
           rm -rf amass_Linux_amd64.zip*
-          
-
+         
           pip3 install --no-cache-dir ipaddress
           
           echo "$HOME/go/bin" >> $GITHUB_PATH
+          
       - name: Download resolvers.txt
         run: |
           curl -sLo resolvers.txt https://raw.githubusercontent.com/trickest/resolvers/refs/heads/main/resolvers.txt
