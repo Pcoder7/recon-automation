@@ -48,42 +48,124 @@ jobs:
         uses: actions/setup-go@v5
         with:
           go-version: '1.22'
-      
+
+      - name: Cache Go modules & binaries
+        uses: actions/cache@v3
+        with:
+          path: |
+            $HOME/go/pkg/mod
+            ~/.cache/go-build
+            $HOME/go/bin
+          key: ${{ runner.os }}-go-cache-${{ github.ref_name }}
+          restore-keys: |
+            ${{ runner.os }}-go-cache-
+         
+    
       - name: Update & Install Dependencies
         run: |
           sudo apt-get update -qq
           sudo apt-get install -y curl git jq unzip
+      
       - name: Install massdns (prerequisite for puredns)
         run: |
           git clone https://github.com/blechschmidt/massdns.git
           cd massdns
           make
           sudo make install          
+      
       - name: Install Tools
         run: |
+
+           # Install httpx
+          if ! command -v httpx >/dev/null; then
+            echo "Installing httpx…"
+            go install -v github.com/projectdiscovery/httpx/cmd/httpx@latest
+          else
+            echo "httpx already in cache"
+          fi
+          
+          # Install anew
+          
+          if ! command -v anew >/dev/null; then
+            echo "Installing anew…"
+            go install -v github.com/tomnomnom/anew@latest
+          else
+            echo "anew already in cache"
+          fi        
+          
           # Install subfinder
-          go install -v github.com/projectdiscovery/subfinder/v2/cmd/subfinder@latest
-          # Install httpx
-          go install -v github.com/projectdiscovery/httpx/cmd/httpx@latest
-          # Install assetfinder
-          go install -v github.com/tomnomnom/assetfinder@latest
+
+          if ! command -v subfinder >/dev/null; then
+            echo "Installing subfinder…"
+            go install -v github.com/projectdiscovery/subfinder/v2/cmd/subfinder@latest
+          else
+            echo "subfinder already in cache"
+          fi        
+
+             # Install assetfinder
+             
+          if ! command -v assetfinder >/dev/null; then
+            echo "Installing assetfinder…"
+            go install -v github.com/tomnomnom/assetfinder@latest
+          else
+            echo "assetfinder already in cache"
+          fi        
+
+           # Install puredns (v2)      
+           
+          if ! command -v puredns >/dev/null; then
+            echo "Installing puredns…"
+            go install github.com/d3mondev/puredns/v2@latest
+          else
+            echo "puredns already in cache"
+          fi  
+
+           # Install alterx for subdomain permutation & enrichment
+          if ! command -v alterx >/dev/null; then
+            echo "Installing alterx…"
+            go install github.com/projectdiscovery/alterx/cmd/alterx@latest 
+          else
+            echo "alterx already in cache"
+          fi  
+                     # Install cdncheck
+          if ! command -v cdncheck >/dev/null; then
+            echo "Installing cdncheck…"
+            go install -v github.com/projectdiscovery/cdncheck/cmd/cdncheck@latest
+          else
+            echo "cdncheck already in cache"
+          fi  
+
+            # Installing dnsx
+          if ! command -v dnsx >/dev/null; then
+            echo "Installing dnsx…"
+            go install -v github.com/projectdiscovery/dnsx/cmd/dnsx@latest
+          else
+            echo "dnsx already in cache"
+          fi  
+
+               # Installing cut-cdn
+          if ! command -v cut-cdn >/dev/null; then
+            echo "Installing cut-cdn…"
+            go install github.com/ImAyrix/cut-cdn@latest
+          else
+            echo "cut-cdn already in cache"
+          fi       
+
+           # Installing smap
+          if ! command -v smap >/dev/null; then
+            echo "Installing smap…"
+            go install -v github.com/s0md3v/smap/cmd/smap@latest
+          else
+            echo "smap already in cache"
+          fi    
+          
           # Install Amass v3.23.3 (uncomment if needed)
           curl -LO https://github.com/owasp-amass/amass/releases/download/v3.23.3/amass_Linux_amd64.zip
           unzip amass_Linux_amd64.zip
           sudo mv amass_Linux_amd64/amass /usr/local/bin/
           rm -rf amass_Linux_amd64.zip*
-          # Install puredns (v2)
-          go install github.com/d3mondev/puredns/v2@latest
-          # Install alterx for subdomain permutation & enrichment
-          go install github.com/projectdiscovery/alterx/cmd/alterx@latest        
-          # Install cdncheck
-          go install -v github.com/projectdiscovery/cdncheck/cmd/cdncheck@latest
-          sudo apt-get update -qq
-          sudo apt-get install -y curl git jq unzip python3 python3-pip
-          # Install dnsx, cut-cdn, smap via Go
-          go install -v github.com/projectdiscovery/dnsx/cmd/dnsx@latest
-          go install github.com/ImAyrix/cut-cdn@latest
-          go install -v github.com/s0md3v/smap/cmd/smap@latest
+          
+
           pip3 install --no-cache-dir ipaddress
           
           echo "$HOME/go/bin" >> $GITHUB_PATH
