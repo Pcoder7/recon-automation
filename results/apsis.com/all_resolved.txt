@@ -9,6 +9,7 @@ files.apsis.com
 help.apsis.com
 jobs.apsis.com
 knowledge.apsis.com
+ns1.apsis.com
 ns2.apsis.com
 one-material.apsis.com
 smtp.apsis.com
