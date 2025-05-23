@@ -1,12 +1,10 @@
 apsis.com
 customers.apsis.com
-customweb1.apsis.com
 d7.apsis.com
 developer.apsis.com
 files.apsis.com
 help.apsis.com
 jobs.apsis.com
-knowledge.apsis.com
 smtp.apsis.com
 tools.apsis.com
 tr.pro-test.apsis.com
