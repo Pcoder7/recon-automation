@@ -491,7 +491,6 @@ jobs:
               "inputs": {
                 "artifact_name": "recon-results-${{ matrix.domain }}",
                 "results_repo": "Pcoder7/recon-automation",
-                "results_dir": "."
                 
               }
             }'
