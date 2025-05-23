@@ -489,8 +489,8 @@ jobs:
             -d '{
               "ref": "main",
               "inputs": {
-                "artifact_name": "recon-results-${{ matrix.domain }}",
-                "caller_repo": "${{ github.repository }}"
+                "artifact_name": "recon-results-${{ matrix.domain }}"
+                
               }
             }'
             
