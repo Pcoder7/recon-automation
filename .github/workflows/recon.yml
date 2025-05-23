@@ -470,10 +470,10 @@ jobs:
           cat results/${{ matrix.domain }}/httpx-no-cdn.txt results/${{ matrix.domain }}/httpx-cdn.txt \
             | sort -u > results/${{ matrix.domain }}/all_httpx.txt
        
-       - name: Stage for artifact
-         run: |
-           mkdir -p http_data
-           cp results/${{ matrix.domain }}/all_resolved.txt http_data
+      - name: Stage for artifact
+        run: |
+          mkdir -p http_data
+          cp results/${{ matrix.domain }}/all_resolved.txt http_data
 
 
       - name: Upload all_resolved.txt for HTTPX downstream
