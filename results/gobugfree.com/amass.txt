@@ -1,8 +1,8 @@
-analytics.gobugfree.com
-media.gobugfree.com
-www.gobugfree.com
-demo.gobugfree.com
 cdn.gobugfree.com
 gobugfree.com
+www.gobugfree.com
 app.gobugfree.com
+demo.gobugfree.com
+media.gobugfree.com
 id.gobugfree.com
+analytics.gobugfree.com
