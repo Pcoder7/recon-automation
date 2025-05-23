@@ -3,7 +3,6 @@ autodiscover.gobugfree.com
 backend.gobugfree.com
 cms.gobugfree.com
 demo.gobugfree.com
-dsp-trvm.eskimi.com
 gobugfree.com
 id.gobugfree.com
 media.gobugfree.com
