@@ -472,15 +472,15 @@ jobs:
        
        - name: Stage for artifact
          run: |
-           mkdir ${{ matrix.domain }}
-           cp results/${{ matrix.domain }}/all_resolved.txt ${{ matrix.domain }}/all_resolved.txt            
+           mkdir -p http_data
+           cp results/${{ matrix.domain }}/all_resolved.txt http_data     
 
 
       - name: Upload all_resolved.txt for HTTPX downstream
         uses: actions/upload-artifact@v4
         with:
           name: recon-results-${{ matrix.domain }}
-          path: ${{ matrix.domain }}
+          path: http_data
           if-no-files-found: error
 
       - name: Trigger httpx-recon workflow in another repo
