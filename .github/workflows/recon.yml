@@ -473,7 +473,7 @@ jobs:
        - name: Stage for artifact
          run: |
            mkdir -p http_data
-           cp results/${{ matrix.domain }}/all_resolved.txt    
+           cp results/${{ matrix.domain }}/all_resolved.txt http_data
 
 
       - name: Upload all_resolved.txt for HTTPX downstream
