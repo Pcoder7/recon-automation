@@ -1,4 +1,1 @@
-d7.apsis.com
-ns1.apsis.com
-one-material.apsis.com
-tr.pro-test.apsis.com
+soc-files.apsis.com
