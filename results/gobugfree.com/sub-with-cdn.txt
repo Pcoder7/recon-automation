@@ -1,8 +1,12 @@
 app.gobugfree.com
 backend.gobugfree.com
+careers.eskimi.com
 cms.gobugfree.com
 demo.gobugfree.com
+dsp.eskimi.com
 gobugfree.com
+grafana.eskimi.com
 id.gobugfree.com
 media.gobugfree.com
+www.eskimi.com
 www.gobugfree.com
