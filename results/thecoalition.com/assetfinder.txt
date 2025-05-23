@@ -6,5 +6,3 @@ platform.thecoalition.com
 www.thecoalition.com
 demo-platform.thecoalition.com
 thecoalition.com
-thecoalition.com
-thecoalition.com
