@@ -1,11 +1,7 @@
 apsis.com
-controller.apsis.com
-customers.apsis.com
-customweb1.apsis.com
-developer.apsis.com
-tools.apsis.com
 xml.apsis.com
 www.apsis.com
+tools.apsis.com
 soc-files.apsis.com
 tr.pro-test.apsis.com
 oneboarding.apsis.com
@@ -15,8 +11,12 @@ knowledge.apsis.com
 jobs.apsis.com
 help.apsis.com
 files.apsis.com
+developer.apsis.com
 dev.apsis.com
 d7.apsis.com
+customweb1.apsis.com
+customers.apsis.com
+controller.apsis.com
 support.ecom.apsis.com
 support.pro.apsis.com
 support.lead.apsis.com
