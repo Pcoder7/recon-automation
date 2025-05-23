@@ -458,7 +458,7 @@ jobs:
         run: |
           if [ -s results/${{ matrix.domain }}/sub-with-cdn.txt ]; then
             httpx -l results/${{ matrix.domain }}/sub-with-cdn.txt \
-              -p https:80,443 -sc -cl -title -fr -vhost -no-color -threads 100 -silent \
+              -p https:443 -sc -cl -title -fr -vhost -no-color -threads 100 -silent \
               -o results/${{ matrix.domain }}/httpx-cdn.txt
           else
             echo "[INFO] no CDN subdomains to probe" >&2
