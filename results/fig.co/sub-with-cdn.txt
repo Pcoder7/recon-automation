@@ -1,0 +1,8 @@
+blog.fig.co
+email.mg.fig.co
+email.staging-mg.fig.co
+fig.co
+help.fig.co
+www.fig.co
+zendesk1.fig.co
+zendesk2.fig.co
