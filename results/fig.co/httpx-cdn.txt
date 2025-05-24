@@ -1,5 +1,5 @@
-https://www.fig.co [200] [585] [Page Redirection] [vhost]
 https://email.mg.fig.co [404] [19] [vhost]
 https://email.staging-mg.fig.co [404] [19] [vhost]
 https://fig.co [200] [585] [Page Redirection] [vhost]
-https://blog.fig.co [301,200] [308849] [Fig Games - Medium] [vhost] [https://medium.com/playfig]
+https://www.fig.co [200] [585] [Page Redirection] [vhost]
+https://blog.fig.co [301,200] [308112] [Fig Games - Medium] [vhost] [https://medium.com/playfig]
