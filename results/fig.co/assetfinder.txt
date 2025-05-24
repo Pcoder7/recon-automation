@@ -4,13 +4,3 @@ mg.fig.co
 email.mg.fig.co
 email.staging-mg.fig.co
 www.fig.co
-fig.co
-fig.co
-email.mg.fig.co
-email.staging-mg.fig.co
-staging.fig.co
-fig.co
-www.fig.co
-help.fig.co
-help.fig.co
-www.help.fig.co
