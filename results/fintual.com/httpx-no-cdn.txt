@@ -1,6 +1,6 @@
 https://link.fintual.com [400] [9233] [Invalid Dynamic Link] [vhost]
 https://deeplink.fintual.com [200] [30747] [vhost]
-http://link.fintual.com [301,200] [30719] [https://link.fintual.com/]
+http://link.fintual.com [301,200] [30703] [https://link.fintual.com/]
 http://deeplink.fintual.com [301,400] [9233] [Invalid Dynamic Link] [https://deeplink.fintual.com/]
 https://otel.fintual.com [401] [13] [vhost]
 http://otel.fintual.com [301,401] [13] [https://otel.fintual.com:443/]
