@@ -3,7 +3,6 @@ cdn.pixabay.com
 e.community.pixabay.com
 link.pixabay.com
 o2736.e.community.pixabay.com
-pixabay.com
 safesearch.pixabay.com
 snowplow-iglu.pixabay.com
 www.pixabay.com
