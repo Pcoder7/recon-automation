@@ -1,3 +1,4 @@
+alfred.fintual.com
 ayuda.fintual.com
 beta.fintual.com
 blackrock.fintual.com
@@ -19,7 +20,6 @@ id.fintual.com
 kibana.fintual.com
 link.fintual.com
 longplay.fintual.com
-otel.fintual.com
 outbound.fintual.com
 remy.fintual.com
 rentabilidad.fintual.com

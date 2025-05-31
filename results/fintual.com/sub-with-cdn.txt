@@ -16,7 +16,6 @@ go.fintual.com
 id.fintual.com
 kibana.fintual.com
 longplay.fintual.com
-otel.fintual.com
 outbound.fintual.com
 remy.fintual.com
 rentabilidad.fintual.com
