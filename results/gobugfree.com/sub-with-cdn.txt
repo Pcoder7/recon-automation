@@ -1,10 +1,14 @@
 app.gobugfree.com
-autodiscover.gobugfree.com
-autodiscover.mail.gobugfree.com
 backend.gobugfree.com
 cms.gobugfree.com
 demo.gobugfree.com
+dev.zepp.com
+developer.zepp.com
+docs.zepp.com
 gobugfree.com
 id.gobugfree.com
+ir.zepp.com
 media.gobugfree.com
+test.zepp.com
 www.gobugfree.com
+www.zepp.com

@@ -1,0 +1,11 @@
+admin.zepp.com
+api-analytics-us3.zepp.com
+api.zepp.com
+autodiscover.zepp.com
+dev.zepp.com
+developer.zepp.com
+docs.zepp.com
+ir.zepp.com
+my.zepp.com
+test.zepp.com
+www.zepp.com

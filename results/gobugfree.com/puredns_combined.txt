@@ -1,3 +1,4 @@
+api-analytics-us3.zepp.com
 app.gobugfree.com
 autodiscover.gobugfree.com
 backend.gobugfree.com
