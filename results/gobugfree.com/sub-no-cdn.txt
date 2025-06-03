@@ -1,8 +1,2 @@
-admin.zepp.com:443
-admin.zepp.com:80
-admin.zepp.com:8180
-api-analytics-us3.zepp.com:443
-api-analytics-us3.zepp.com:80
 autodiscover.gobugfree.com:80
 autodiscover.mail.gobugfree.com:80
-autodiscover.zepp.com:80
