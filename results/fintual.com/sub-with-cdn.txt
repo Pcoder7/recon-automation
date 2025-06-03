@@ -15,6 +15,7 @@ framer.fintual.com
 go.fintual.com
 id.fintual.com
 kibana.fintual.com
+link.fintual.com
 longplay.fintual.com
 otel.fintual.com
 outbound.fintual.com
