@@ -5,6 +5,7 @@ blackrock.fintual.com
 blog.fintual.com
 conoce.fintual.com
 copilot.fintual.com
+core-banking.novopayment.fintual.com
 deeplink.fintual.com
 design.fintual.com
 designtest.fintual.com
@@ -23,6 +24,7 @@ otel.fintual.com
 outbound.fintual.com
 remy.fintual.com
 rentabilidad.fintual.com
+retool.cash.fintual.com
 ruta.fintual.com
 scim.1password.fintual.com
 sr.fintual.com
