@@ -1,2 +1,0 @@
-core-banking.novopayment.fintual.com
-retool.cash.fintual.com
