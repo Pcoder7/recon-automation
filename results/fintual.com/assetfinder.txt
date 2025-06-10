@@ -20,6 +20,8 @@ git.fintual.com
 framer.fintual.com
 capi.fintual.com
 scim.1password.fintual.com
+designtest.fintual.com
+fintual.com
 fintual.com
 fintual.com
 copilot.fintual.com
@@ -27,8 +29,6 @@ id.fintual.com
 design.fintual.com
 fintual.com
 docs.fintual.com
-designtest.fintual.com
-fintual.com
 core-banking.novopayment.fintual.com
 cash.fintual.com
 www.cash.fintual.com
