@@ -6,5 +6,6 @@ cms.gobugfree.com
 demo.gobugfree.com
 gobugfree.com
 id.gobugfree.com
+kali.gobugfree.com
 media.gobugfree.com
 www.gobugfree.com
