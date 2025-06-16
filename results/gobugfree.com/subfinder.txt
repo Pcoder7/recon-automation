@@ -1,7 +1,7 @@
-app.gobugfree.com
-demo.gobugfree.com
+kali.gobugfree.com
 media.gobugfree.com
 cdn.gobugfree.com
+app.gobugfree.com
+demo.gobugfree.com
 id.gobugfree.com
 www.gobugfree.com
-kali.gobugfree.com
