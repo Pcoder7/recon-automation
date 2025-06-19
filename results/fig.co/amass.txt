@@ -1,6 +1,6 @@
 mg.fig.co
+email.mg.fig.co
 blog.fig.co
 email.staging-mg.fig.co
 fig.co
 www.fig.co
-email.mg.fig.co
