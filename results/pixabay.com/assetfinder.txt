@@ -5,7 +5,6 @@ safesearch.pixabay.com
 www.pixabay.com
 pixabay.com
 pixabay.com
-pixabay.com
 community.pixabay.com
 *.pixabay.com
 pixabay.com
@@ -115,6 +114,7 @@ msv01.pixabay.com
 mpx02.pixabay.com
 mpx01.pixabay.com
 dbase.pixabay.com
+pixabay.com
 mn1.pixabay.com
 munin02.pixabay.com
 munin01.pixabay.com
