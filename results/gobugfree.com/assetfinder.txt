@@ -1,6 +1,11 @@
-kali.gobugfree.com
-gobugfree.com
 app.gobugfree.com
 demo.gobugfree.com
 id.gobugfree.com
 www.gobugfree.com
+gobugfree.com
+gobugfree.com
+trail.gobugfree.com
+kali.gobugfree.com
+media.gobugfree.com
+gobugfree.com
+cdn.gobugfree.com

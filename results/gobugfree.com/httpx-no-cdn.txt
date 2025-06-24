@@ -1,2 +1,2 @@
-http://autodiscover.gobugfree.com [301,200] [11997] [Outlook] [https://outlook.office365.com/mail/?realm=gobugfree.com&vd=autodiscover]
-http://autodiscover.mail.gobugfree.com [301,200] [11997] [Outlook] [https://outlook.office365.com/mail/?realm=mail.gobugfree.com&vd=autodiscover]
+http://autodiscover.gobugfree.com [301,200] [11996] [Outlook] [https://outlook.office365.com/mail/?realm=gobugfree.com&vd=autodiscover]
+http://autodiscover.mail.gobugfree.com [301,200] [11996] [Outlook] [vhost] [https://outlook.office365.com/mail/?realm=mail.gobugfree.com&vd=autodiscover]
