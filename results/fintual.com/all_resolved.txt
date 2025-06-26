@@ -1,4 +1,3 @@
-alfred.fintual.com
 ayuda.fintual.com
 beta.fintual.com
 blackrock.fintual.com
@@ -24,6 +23,7 @@ otel.fintual.com
 outbound.fintual.com
 remy.fintual.com
 rentabilidad.fintual.com
+retool.cash.fintual.com
 ruta.fintual.com
 scim.1password.fintual.com
 sr.fintual.com
