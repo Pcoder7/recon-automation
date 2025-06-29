@@ -1,2 +1,2 @@
+http://deeplink.fintual.com [301,200] [30765] [https://deeplink.fintual.com/]
 https://deeplink.fintual.com [400] [9233] [Invalid Dynamic Link] [vhost]
-http://deeplink.fintual.com [301,400] [9233] [Invalid Dynamic Link] [https://deeplink.fintual.com/]
