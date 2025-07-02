@@ -42,6 +42,7 @@ jobs:
         username: ${{ secrets.GHCR_USER }}
         password: ${{ secrets.GHCR_TOKEN }}      
     strategy:
+      fail-fast: false
       matrix:
         domain: ${{ fromJson(needs.generate_matrix.outputs.matrix) }}
     steps:
@@ -114,8 +115,7 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: recon-results-${{ matrix.domain }}
-          path: artifact_data
-          if-no-files-found: error
+
 
     
       - name: Commit and Push Results for ${{ matrix.domain }}
