@@ -84,6 +84,7 @@ jobs:
           
 
       - name: Run Subdomain Enumeration for ${{ matrix.domain }}
+        shell: bash
         run: |
           echo "Scanning domain: ${{ matrix.domain }}"
 
