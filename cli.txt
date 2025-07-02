@@ -1,0 +1,3 @@
+subfinder -d _target_ -silent -nc -o _output_/subfinder.txt
+amass enum -passive -d _target_ -norecursive -o _output_/amass.txt -silent
+assetfinder --subs-only _target_ | anew -q _output_/assetfinder.tx
