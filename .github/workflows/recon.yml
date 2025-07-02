@@ -11,6 +11,12 @@ permissions:
 jobs:
   generate_matrix:
     runs-on: ubuntu-latest
+    container:
+      # Use the exact same container for consistency with the primary account
+      image: ghcr.io/pcoder7/spider-puredns-actions:latest
+      credentials:
+        username: ${{ secrets.GHCR_USER }}
+        password: ${{ secrets.GHCR_TOKEN }}    
     outputs:
       matrix: ${{ steps.set_matrix.outputs.matrix }}
     steps:
@@ -60,22 +66,9 @@ jobs:
           restore-keys: |
             ${{ runner.os }}-go-cache-
          
-    
-      - name: Update & Install Dependencies
-        run: |
-          sudo apt-get update -qq
-          sudo apt-get install -y curl git jq unzip
-      
-      - name: Install massdns (prerequisite for puredns)
-        run: |
-          git clone https://github.com/blechschmidt/massdns.git
-          cd massdns
-          make
-          sudo make install          
       
       - name: Install Tools
         run: |
-
         
           # Install cdncheck
           if ! command -v cdncheck >/dev/null; then
@@ -83,14 +76,6 @@ jobs:
             go install -v github.com/projectdiscovery/cdncheck/cmd/cdncheck@latest
           else
             echo "cdncheck already in cache"
-          fi  
-
-          # Installing dnsx
-          if ! command -v dnsx >/dev/null; then
-            echo "Installing dnsx…"
-            go install -v github.com/projectdiscovery/dnsx/cmd/dnsx@latest
-          else
-            echo "dnsx already in cache"
           fi  
 
           # Installing cut-cdn
@@ -108,12 +93,6 @@ jobs:
           else
             echo "smap already in cache"
           fi    
-          
-          # Install Amass v3.23.3 (uncomment if needed)
-          curl -LO https://github.com/owasp-amass/amass/releases/download/v3.23.3/amass_Linux_amd64.zip
-          unzip amass_Linux_amd64.zip
-          sudo mv amass_Linux_amd64/amass /usr/local/bin/
-          rm -rf amass_Linux_amd64.zip*
          
           pip3 install --no-cache-dir ipaddress
           
@@ -137,6 +116,7 @@ jobs:
           echo "$HOME/go/bin" >> $GITHUB_PATH
           # display and show provider-config.yaml file
           cat ~/.config/notify/provider-config.yaml  
+      
       - name: Show notify config
         run: | 
           echo "$DIS_WEBHOOK"
