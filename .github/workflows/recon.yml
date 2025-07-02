@@ -85,16 +85,8 @@ jobs:
           echo "$HOME/go/bin" >> $GITHUB_PATH
           
         # 2) Set up Python 3.6.9 (provides python3 & pip)
-      - name: Set up Python 3.6.9
-        uses: actions/setup-python@v4
-        with:
-          python-version: '3.6.9'    # ← specify exact version
-          cache: 'pip'               # optional: caches pip packages between runs
 
-      - name: Verify Python
-        run: |
-          python3 --version        # should output Python 3.6.9
-          which python3            # points to the setup‐python shim
+      
     
 
       - name: Run Subdomain Enumeration for ${{ matrix.domain }}
@@ -105,7 +97,7 @@ jobs:
           git clone https://github.com/codingo/Interlace.git
           cd Interlace
           python3 -m pip install -r requirements.txt
-          python3 setup.py install
+          pip3 install .
           python3 Interlace/interlace.py -h
           cd ..
           which interlace
