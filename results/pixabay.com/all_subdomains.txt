@@ -6,6 +6,7 @@ admin.pixabay.com
 adn.pixabay.com
 cdn.pixabay.com
 community.pixabay.com
+crt.pixabay.com
 db.pixabay.com
 db1.pixabay.com
 db2.pixabay.com
@@ -16,9 +17,11 @@ fls.pixabay.com
 goodies.pixabay.com
 info.pixabay.com
 link.pixabay.com
+m1.pixabay.com
 mail.pixabay.com
 mbk01.pixabay.com
 mc.pixabay.com
+misc.pixabay.com
 mn01.pixabay.com
 mn02.pixabay.com
 mn03.pixabay.com
