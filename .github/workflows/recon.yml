@@ -38,7 +38,6 @@ jobs:
     container:
       # Use the exact same container for consistency with the primary account
       image: ghcr.io/pcoder7/spider-puredns-actions:latest
-      options: --entrypoint ""
       credentials:
         username: ${{ secrets.GHCR_USER }}
         password: ${{ secrets.GHCR_TOKEN }}      
@@ -84,15 +83,11 @@ jobs:
           
           echo "$HOME/go/bin" >> $GITHUB_PATH
           
-        # 2) Set up Python 3.6.9 (provides python3 & pip)
+  
 
-      
-    
-
-      - name: Run Subdomain Enumeration for ${{ matrix.domain }}
+      - name: Install interlace tool
         shell: bash
         run: |
-          echo "Scanning domain: ${{ matrix.domain }}"
           python3 --version
           git clone https://github.com/codingo/Interlace.git
           cd Interlace
@@ -100,8 +95,13 @@ jobs:
           pip3 install .
           python3 Interlace/interlace.py -h
           cd ..
+
+      - name: Run Subdomain Enumeration for ${{ matrix.domain }}
+        shell: bash
+        run: |
+          echo "Scanning domain: ${{ matrix.domain }}"
           interlace \
-          -t "${{ matrix.domain }}" \
+          -t ${{ matrix.domain }} \
           -threads 3 \
           -c "subfinder -d _target_ -silent -o results/${{ matrix.domain }}/subfinder.txt" \
           -c "amass enum -passive -d _target_ -o results/${{ matrix.domain }}/amass.txt" \
