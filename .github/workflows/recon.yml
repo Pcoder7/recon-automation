@@ -121,6 +121,8 @@ jobs:
     
       - name: Commit and Push Results for ${{ matrix.domain }}
         run: |
+          
+          git config --global --add safe.directory "$GITHUB_WORKSPACE"        
           git config --global user.name 'github-actions[bot]'
           git config --global user.email 'github-actions[bot]@users.noreply.github.com'
           git add results/${{ matrix.domain }}/dnsx.json \
@@ -128,7 +130,34 @@ jobs:
             results/${{ matrix.domain }}/assetfinder.txt \
             results/${{ matrix.domain }}/amass.txt \
             results/${{ matrix.domain }}/all_subdomains.txt 
-          git diff --cached --quiet || git commit -m "Update live scan for ${{ matrix.domain }}"
-          git pull --rebase --autostash origin main
-          git push
-        
+
+          if git diff --staged --quiet; then
+            echo "No changes to commit. Exiting."
+            exit 0
+          fi
+          # 4. Commit the changes once, before the loop
+          git commit -m "Daily Recon: Update subdomain results"
+
+          # 5. Create a retry loop to handle potential race conditions during the push
+          echo "Attempting to push changes with a retry loop..."
+          for i in {1..5}
+          do
+            # First, pull the latest changes from the remote branch using rebase
+            # This places our new commit on top of any other recent commits
+            git pull --rebase
+
+            # Now, attempt to push
+            if git push; then
+              echo "Push successful on attempt $i."
+              # If push is successful, exit the script with a success code
+              exit 0
+            fi
+
+            # If push failed, wait for a bit before the next attempt
+            echo "Push failed on attempt $i. Retrying in 5 seconds..."
+            sleep 5
+          done
+
+          # 6. If the loop completes without a successful push, exit with an error
+          echo "Failed to push changes after 5 attempts."
+          exit 1
