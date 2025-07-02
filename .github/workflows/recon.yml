@@ -89,6 +89,9 @@ jobs:
         shell: bash
         run: |
           echo "Scanning domain: ${{ matrix.domain }}"
+          python --version
+          which interlace
+          lls -l $(which interlace)
 
           interlace \
           -t "${{ matrix.domain }}" \
