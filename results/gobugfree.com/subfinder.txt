@@ -20,3 +20,11 @@ cdn.gobugfree.com
 trail.gobugfree.com
 kali.gobugfree.com
 id.gobugfree.com
+www.gobugfree.com
+app.gobugfree.com
+demo.gobugfree.com
+media.gobugfree.com
+cdn.gobugfree.com
+trail.gobugfree.com
+kali.gobugfree.com
+id.gobugfree.com
