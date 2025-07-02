@@ -69,22 +69,6 @@ jobs:
       
       - name: Install Tools
         run: |
-        
-          # Install cdncheck
-          if ! command -v cdncheck >/dev/null; then
-            echo "Installing cdncheck…"
-            go install -v github.com/projectdiscovery/cdncheck/cmd/cdncheck@latest
-          else
-            echo "cdncheck already in cache"
-          fi  
-
-          # Installing cut-cdn
-          if ! command -v cut-cdn >/dev/null; then
-            echo "Installing cut-cdn…"
-            go install github.com/ImAyrix/cut-cdn@latest
-          else
-            echo "cut-cdn already in cache"
-          fi       
 
           # Installing smap
           if ! command -v smap >/dev/null; then
@@ -97,32 +81,6 @@ jobs:
           pip3 install --no-cache-dir ipaddress
           
           echo "$HOME/go/bin" >> $GITHUB_PATH
-          
-
-      - name: Install notify
-        env: 
-          DISCORD_WEBHOOK: ${{ secrets.DIS_WEBHOOK }}
-        run: |
-          go install -v github.com/projectdiscovery/notify/cmd/notify@latest
-          mkdir -p ~/.config/notify/
-          cat <<EOF > ~/.config/notify/provider-config.yaml
-              # Write provider config with our Discord webhook
-          discord:
-            - id: "subscan"
-              discord_channel: "subdomain-scan"
-              discord_format: "{{data}}"
-              discord_webhook_url: "${{ secrets.DIS_WEBHOOK }}"
-          EOF
-          echo "$HOME/go/bin" >> $GITHUB_PATH
-          # display and show provider-config.yaml file
-          cat ~/.config/notify/provider-config.yaml  
-      
-      - name: Show notify config
-        run: | 
-          echo "$DIS_WEBHOOK"
-          sed -e 's/.*/&/' ~/.config/notify/provider-config.yaml
-        env:
-          DISCORD_WEBHOOK: ${{ secrets.DIS_WEBHOOK }}
           
 
       - name: Run Subdomain Enumeration for ${{ matrix.domain }}
