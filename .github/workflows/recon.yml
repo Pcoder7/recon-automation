@@ -176,6 +176,6 @@ jobs:
             -H "Accept: application/vnd.github.v3+json" \
             -H "Authorization: token ${PAT_TOKEN}" \
             https://api.github.com/repos/puredns-res/dispatches \
-            -d '{"event_type": "trigger_puredns"}'
+            -d '{"event_type": "trigger_puredns", "client_payload": {"results_repo": "${{ github.repository }}", "results_dir": "results"}}'
 
           
