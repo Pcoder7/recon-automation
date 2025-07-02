@@ -11,13 +11,7 @@ permissions:
 jobs:
   generate_matrix:
     runs-on: ubuntu-latest
-    container:
-      # Use the exact same container for consistency with the primary account
-      image: ghcr.io/pcoder7/spider-puredns-actions:latest
-      options: --entrypoint ""
-      credentials:
-        username: ${{ secrets.GHCR_USER }}
-        password: ${{ secrets.GHCR_TOKEN }}    
+
     outputs:
       matrix: ${{ steps.set_matrix.outputs.matrix }}
     steps:
@@ -41,6 +35,13 @@ jobs:
   scan:
     needs: generate_matrix
     runs-on: ubuntu-latest
+    container:
+      # Use the exact same container for consistency with the primary account
+      image: ghcr.io/pcoder7/spider-puredns-actions:latest
+      options: --entrypoint ""
+      credentials:
+        username: ${{ secrets.GHCR_USER }}
+        password: ${{ secrets.GHCR_TOKEN }}      
     strategy:
       matrix:
         domain: ${{ fromJson(needs.generate_matrix.outputs.matrix) }}
