@@ -100,9 +100,6 @@ jobs:
           pip3 install .
           python3 Interlace/interlace.py -h
           cd ..
-          which interlace
-          ls -l $(which interlace)
-
           interlace \
           -t "${{ matrix.domain }}" \
           -threads 3 \
@@ -112,7 +109,7 @@ jobs:
           -v
           # Combine results and deduplicate into combined.txt
           cat results/${{ matrix.domain }}/subfinder.txt results/${{ matrix.domain }}/assetfinder.txt results/${{ matrix.domain }}/amass.txt | sort -u > results/${{ matrix.domain }}/all_subdomains.txt
-      
+          wc -l results/${{ matrix.domain }}/all_subdomains.txt
        
       - name: Upload all_subdomains.txt for 
         uses: actions/upload-artifact@v4
