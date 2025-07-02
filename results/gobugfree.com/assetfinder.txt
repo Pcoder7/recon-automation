@@ -4,3 +4,6 @@ id.gobugfree.com
 www.gobugfree.com
 kali.gobugfree.com
 gobugfree.com
+trail.gobugfree.com
+media.gobugfree.com
+cdn.gobugfree.com
