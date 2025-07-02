@@ -175,7 +175,7 @@ jobs:
           curl -X POST \
             -H "Accept: application/vnd.github.v3+json" \
             -H "Authorization: token ${PAT_TOKEN}" \
-            https://api.github.com/repos/puredns-res/dispatches \
+            https://api.github.com/repos/Pcoder7/puredns-res/dispatches \
             -d '{"event_type": "trigger_puredns", "client_payload": {"results_repo": "${{ github.repository }}", "results_dir": "results"}}'
 
           
