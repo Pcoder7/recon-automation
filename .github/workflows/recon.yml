@@ -76,58 +76,7 @@ jobs:
       - name: Install Tools
         run: |
 
-          # Install httpx
-          if ! command -v httpx >/dev/null; then
-            echo "Installing httpx…"
-            go install -v github.com/projectdiscovery/httpx/cmd/httpx@latest
-          else
-            echo "httpx already in cache"
-          fi
-          
-          # Install anew
-          
-          if ! command -v anew >/dev/null; then
-            echo "Installing anew…"
-            go install -v github.com/tomnomnom/anew@latest
-          else
-            echo "anew already in cache"
-          fi        
-          
-          # Install subfinder
-
-          if ! command -v subfinder >/dev/null; then
-            echo "Installing subfinder…"
-            go install -v github.com/projectdiscovery/subfinder/v2/cmd/subfinder@latest
-          else
-            echo "subfinder already in cache"
-          fi        
-
-          # Install assetfinder
-             
-          if ! command -v assetfinder >/dev/null; then
-            echo "Installing assetfinder…"
-            go install -v github.com/tomnomnom/assetfinder@latest
-          else
-            echo "assetfinder already in cache"
-          fi        
-
-          # Install puredns (v2)      
-           
-          if ! command -v puredns >/dev/null; then
-            echo "Installing puredns…"
-            go install github.com/d3mondev/puredns/v2@latest
-          else
-            echo "puredns already in cache"
-          fi  
-
-          # Install alterx for subdomain permutation & enrichment
-          if ! command -v alterx >/dev/null; then
-            echo "Installing alterx…"
-            go install github.com/projectdiscovery/alterx/cmd/alterx@latest 
-          else
-            echo "alterx already in cache"
-          fi  
-          
+        
           # Install cdncheck
           if ! command -v cdncheck >/dev/null; then
             echo "Installing cdncheck…"
@@ -170,18 +119,7 @@ jobs:
           
           echo "$HOME/go/bin" >> $GITHUB_PATH
           
-      - name: Download resolvers.txt
-        run: |
-          curl -sLo resolvers.txt https://raw.githubusercontent.com/trickest/resolvers/refs/heads/main/resolvers.txt
-          curl -sLo resolvers-trusted.txt https://raw.githubusercontent.com/trickest/resolvers/refs/heads/main/resolvers-trusted.txt
-      - name: Download Subdomain Wordlists
-        run: |
-          curl -sLo level1.txt https://raw.githubusercontent.com/trickest/wordlists/refs/heads/main/inventory/levels/level1.txt
-          curl -sLo level2.txt https://raw.githubusercontent.com/trickest/wordlists/refs/heads/main/inventory/levels/level2.txt
-          curl -sLo level3.txt https://raw.githubusercontent.com/trickest/wordlists/refs/heads/main/inventory/levels/level3.txt
-          curl -sLo n0kovo_subdomains_huge.txt https://raw.githubusercontent.com/n0kovo/n0kovo_subdomains/refs/heads/main/n0kovo_subdomains_huge.txt
-          cat level1.txt level2.txt level3.txt > all_levels.txt          
-      
+
       - name: Install notify
         env: 
           DISCORD_WEBHOOK: ${{ secrets.DIS_WEBHOOK }}
@@ -206,301 +144,29 @@ jobs:
         env:
           DISCORD_WEBHOOK: ${{ secrets.DIS_WEBHOOK }}
           
-      - name: Create Results Directory for ${{ matrix.domain }}
-        run: |
-           mkdir -p results/${{ matrix.domain }}
-           rm -f results/${{ matrix.domain }}/*.txt || true    
-           # Remove any leftover outputs, including previous new_subdomains.txt
-           rm -f results/${{ matrix.domain }}/new_subdomains.txt || true
+
       - name: Run Subdomain Enumeration for ${{ matrix.domain }}
         run: |
           echo "Scanning domain: ${{ matrix.domain }}"
-          # Run subfinder
-          subfinder -d "${{ matrix.domain }}" -silent -o results/${{ matrix.domain }}/subfinder.txt
-          # Run assetfinder
-          assetfinder --subs-only "${{ matrix.domain }}" > results/${{ matrix.domain }}/assetfinder.txt
-          # Uncomment to run Amass if needed:
-          amass enum -d "${{ matrix.domain }}" -passive -noalts -nolocaldb -norecursive -o results/${{ matrix.domain }}/amass.txt
+
+          interlace \
+          -t "${{ matrix.domain }}" \
+          -threads 3 \
+          -c "subfinder -d _target_ -silent -o results/${{ matrix.domain }}/subfinder.txt" \
+          -c "amass enum -passive -d _target_ -o results/${{ matrix.domain }}/amass.txt" \
+          -c "assetfinder --subs-only _target_ | anew -q results/${{ matrix.domain }}/assetfinder.txt" \
+          -v
           # Combine results and deduplicate into combined.txt
-          cat results/${{ matrix.domain }}/subfinder.txt results/${{ matrix.domain }}/assetfinder.txt | sort -u > results/${{ matrix.domain }}/combined.txt
+          cat results/${{ matrix.domain }}/subfinder.txt results/${{ matrix.domain }}/assetfinder.txt results/${{ matrix.domain }}/amass.txt | sort -u > results/${{ matrix.domain }}/all_subdomains.txt
       
-      - name: Run puredns Bruteforce for ${{ matrix.domain }}
-        run: |
-          echo "Running puredns bruteforce for ${{ matrix.domain }}"
-          cat n0kovo_subdomains_huge.txt | puredns bruteforce ${{ matrix.domain }} -r resolvers.txt --resolvers-trusted resolvers-trusted.txt --write results/${{ matrix.domain }}/bruteforce_res.txt
-          cat results/${{ matrix.domain }}/bruteforce_res.txt | sort -u > results/${{ matrix.domain }}/bruteforce_result.txt
-          cat results/${{ matrix.domain }}/bruteforce_result.txt | wc -l
-          
-          rm results/${{ matrix.domain }}/bruteforce_res.txt
-          
-      - name: Resolve Combined Results using puredns for ${{ matrix.domain }}
-        run: |
-          echo "Resolving combined subdomains for ${{ matrix.domain }}"
-          puredns resolve results/${{ matrix.domain }}/combined.txt -r resolvers.txt --resolvers-trusted resolvers-trusted.txt --write results/${{ matrix.domain }}/resolved_comb.txt
-          cat results/${{ matrix.domain }}/resolved_comb.txt | sort -u > results/${{ matrix.domain }}/resolved_combined.txt
-          rm results/${{ matrix.domain }}/resolved_comb.txt
-          
-      - name: Combine Bruteforce and Resolved Results for ${{ matrix.domain }}
-        run: |
-          cat results/${{ matrix.domain }}/bruteforce_result.txt results/${{ matrix.domain }}/resolved_combined.txt | sort -u > results/${{ matrix.domain }}/puredns_combined.txt
-      - name: Enrich + Split+Resolve alterx_enriched
-        run: |
-          D="${{ matrix.domain }}"
-          BASE="results/$D"
-          ENRICH="$BASE/alterx_enriched.txt"
-          
-          # 1. Enrich everything
-          cat "$BASE/puredns_combined.txt" | alterx -enrich > "$ENRICH"
-          # 2. Prepare final alterx.txt
-          > "$BASE/alterx.txt"
-          # 3. If the enriched file is >50MB, split it
-          MAX=$((50 * 1024 * 1024))
-          SIZE=$(stat -c%s "$ENRICH")
-          if [ "$SIZE" -gt "$MAX" ]; then
-            echo "Large alterx_enriched.txt ($SIZE bytes), splitting into 50MB chunks"  
-            split -b 50M "$ENRICH" "$BASE/alterx.part_"
-            PARTS=( "$BASE"/alterx.part_* )
-          else
-            PARTS=( "$ENRICH" )
-          fi
-          # 4. Resolve each part and append unique results
-          for PART in "${PARTS[@]}"; do
-            echo "Resolving subdomains in $(basename "$PART")"
-            puredns resolve "$PART" \
-              -r resolvers.txt --resolvers-trusted resolvers-trusted.txt \
-              --write tmp_resolved.txt
-            sort -u tmp_resolved.txt >> "$BASE/alterx.txt"
-          done
-          # 5. Clean up
-          rm -f tmp_resolved.txt "${PARTS[@]}"
-          # 6. Now combine with puredns_combined for final all_resolved
-          cat "$BASE/puredns_combined.txt" "$BASE/alterx.txt" | sort -u > "$BASE/all_resolved.txt"
-        
-      - name: Compare Results for ${{ matrix.domain }}
-        id: compare
-        run: |
-          # Compare only the combined.txt file (which contains subdomain enumeration output)
-          NEW="results/${{ matrix.domain }}/all_resolved.txt"
-          OLD=$(mktemp)
-          git show HEAD:$NEW 2>/dev/null | sort -u > "$OLD" || touch "$OLD"
-          sort -u "$NEW" > "${NEW}.sorted"
-          comm -23 "${NEW}.sorted" "$OLD" > results/${{ matrix.domain }}/new_subdomains.txt
-          if [ -s results/${{ matrix.domain }}/new_subdomains.txt ]; then
-            echo "has_new_subdomains=true" >> $GITHUB_OUTPUT
-          else
-            echo "has_new_subdomains=false" >> $GITHUB_OUTPUT
-          fi  
-  
-      - name: Notify Discord for ${{ matrix.domain }}
-        if: steps.compare.outputs.has_new_subdomains == 'true'
-        run: |
-          # 1. Capture today’s date and the current domain
-          DATE=$(date +"%d-%m-%Y")
-          DOMAIN="${{ matrix.domain }}"
-      
-          # 2. Path to the file with only the new subdomains
-          FILE="results/${DOMAIN}/new_subdomains.txt"
-      
-          # 3. Count how many new subdomains we have
-          COUNT=$(wc -l < "$FILE")
-      
-          # 4. If more than 50, send a header message, then the file
-          if [ "$COUNT" -gt 50 ]; then
-            # 4a. Send a text header with domain and date
-            echo -e "🔔 $COUNT New subdomains for ${DOMAIN}\n📅 Date: ${DATE}" \
-              | notify -id subscan
-            # 4b. Send the full list as a file
-            notify -bulk -id subscan -data "$FILE"
-          else
-            # 5. If 1–50 new entries, send one bulk message including header and list
-            {
-              echo "🔔 $COUNT New subdomains for ${DOMAIN}"
-              echo "📅 Date: ${DATE}"
-              echo
-              cat "$FILE"
-            } | notify -bulk -id subscan
-          fi      
-      
-      - name: Create map_ip_to_host.py
-        run: |
-          cat << 'EOF' > map_ip_to_host.py
-          #!/usr/bin/env python3
-          import json, sys, ipaddress
-          from collections import defaultdict
-    
-          def load_ip_map(dnsx_file):
-              ip_map = defaultdict(list)
-              with open(dnsx_file) as f:
-                  for lineno, line in enumerate(f, 1):
-                      line=line.strip()
-                      if not line or not line.startswith('{'): continue
-                      try:
-                          obj=json.loads(line)
-                      except json.JSONDecodeError:
-                          continue
-                      host=obj.get('host')
-                      for ip in obj.get('a',[]):
-                          try:
-                              ipaddress.ip_address(ip)
-                              ip_map[ip].append(host)
-                          except ValueError:
-                              continue
-              return ip_map
-    
-          def main():
-              if len(sys.argv)!=3:
-                  print(f"Usage: {sys.argv[0]} <dnsx.json> <ip-port.txt>", file=sys.stderr)
-                  sys.exit(1)
-              ip_map=load_ip_map(sys.argv[1])
-              for lineno, raw in enumerate(open(sys.argv[2]), start=1):
-
-                  entry = raw.strip()
-                  if not entry:
-                      continue      
-                  parts = entry.split(':')
-                  if len(parts) == 1:
-                      ip_part = parts[0].rstrip(';')
-                      port = None
-                  elif len(parts) == 2:
-                      ip_part = parts[0].rstrip(';')
-                      port = parts[1].lstrip(';')
-                  else:
-                      print(f"[WARN] skipping malformed line {lineno}: '{entry}'", file=sys.stderr)
-                      continue   
-
-                  try:
-                      ipaddress.ip_address(ip_part)
-                  except ValueError:
-                      print(f"[WARN] invalid IP on line {lineno}: '{ip_part}'", file=sys.stderr)
-                      continue      
-                  hosts = ip_map.get(ip_part,[])
-                  if not hosts:
-                      print(f"[WARN] no subdomain for IP {ip_part} (line {lineno})", file=sys.stderr)
-                      continue      
-                  for host in hosts:
-                      if port:
-                          print(f"{host}:{port}")
-                      else:
-                          print(host)
-                      
-          if __name__=='__main__':
-              main()
-          EOF
-          chmod +x map_ip_to_host.py
-      - name: Take all_resolved.txt and run dnsx
-        run: |
-          cat results/${{ matrix.domain }}/all_resolved.txt | dnsx -silent -json > results/${{ matrix.domain }}/dnsx.json
-    
-      - name: Extract all IPs
-        run: |
-          jq -R -r 'fromjson? | select(.a) | .a[]' results/${{ matrix.domain }}/dnsx.json > results/${{ matrix.domain }}/all_IP.txt
-    
-      - name: Filter non-CDN IPs
-        run: |
-          cat results/${{ matrix.domain }}/all_IP.txt | cut-cdn -active -silent -o results/${{ matrix.domain }}/no-cdn_IP.txt
-
-      - name: Port scan non-CDN with smap
-        run: |
-          if [ -s results/${{ matrix.domain }}/no-cdn_IP.txt ]; then
-            smap -iL results/${{ matrix.domain }}/no-cdn_IP.txt \
-                 -oP results/${{ matrix.domain }}/smap.txt
-          else
-            echo "[INFO] no non-CDN IPs to scan" >&2
-            touch results/${{ matrix.domain }}/smap.txt
-          fi
-    
-      - name: Map IPs to subdomains (non-CDN)
-        run: |
-          if [ -s results/${{ matrix.domain }}/smap.txt ]; then
-            ./map_ip_to_host.py \
-              results/${{ matrix.domain }}/dnsx.json \
-              results/${{ matrix.domain }}/smap.txt \
-              |sort -u > results/${{ matrix.domain }}/sub-no-cdn.txt
-          else
-            echo "[INFO] no smap results to map" >&2
-            touch results/${{ matrix.domain }}/sub-no-cdn.txt
-          fi
-    
-      - name: HTTP probe non-CDN subdomains
-        run: |
-          if [ -s results/${{ matrix.domain }}/sub-no-cdn.txt ]; then
-            cat results/${{ matrix.domain }}/sub-no-cdn.txt | sort -u \
-              | httpx -sc -cl -title -fr -vhost -no-color -threads 100 -silent -o results/${{ matrix.domain }}/httpx-no-cdn.txt 
-          else
-            echo "[INFO] no non-CDN subdomains to probe" >&2
-            touch results/${{ matrix.domain }}/httpx-no-cdn.txt
-          fi
-    
-      - name: Identify CDN IPs
-        run: |
-          if [ -s results/${{ matrix.domain }}/no-cdn_IP.txt ]; then
-            grep -Fxv -f results/${{ matrix.domain }}/no-cdn_IP.txt \
-              results/${{ matrix.domain }}/all_IP.txt \
-              > results/${{ matrix.domain }}/cdn-IP.txt
-          else
-            echo "[INFO] no non-CDN IPs, all are CDN" >&2
-            cat results/${{ matrix.domain }}/all_IP.txt > results/${{ matrix.domain }}/cdn-IP.txt
-          fi
-    
-      - name: Map IPs to subdomains (CDN)
-        run: |
-          if [ -s results/${{ matrix.domain }}/cdn-IP.txt ]; then
-            ./map_ip_to_host.py \
-              results/${{ matrix.domain }}/dnsx.json \
-              results/${{ matrix.domain }}/cdn-IP.txt \
-              | sort -u > results/${{ matrix.domain }}/sub-with-cdn.txt
-          else
-            echo "[INFO] no CDN IPs to map" >&2
-            touch results/${{ matrix.domain }}/sub-with-cdn.txt
-          fi
-    
-      - name: HTTP probe CDN subdomains
-        run: |
-          if [ -s results/${{ matrix.domain }}/sub-with-cdn.txt ]; then
-            httpx -l results/${{ matrix.domain }}/sub-with-cdn.txt \
-              -p https:443 -sc -cl -title -fr -vhost -no-color -threads 100 -silent \
-              -o results/${{ matrix.domain }}/httpx-cdn.txt
-          else
-            echo "[INFO] no CDN subdomains to probe" >&2
-            touch results/${{ matrix.domain }}/httpx-cdn.txt
-          fi
-    
-      - name: Combine all HTTPX results
-        run: |
-          cat results/${{ matrix.domain }}/httpx-no-cdn.txt results/${{ matrix.domain }}/httpx-cdn.txt \
-            | sort -u > results/${{ matrix.domain }}/all_httpx.txt
-
-      - name: Stage only all_resolved.txt
-        run: |
-          mkdir -p artifact_data/results/${{ matrix.domain }}
-          cp results/${{ matrix.domain }}/all_resolved.txt \
-          artifact_data/results/${{ matrix.domain }}/all_resolved.txt
-            
        
-      - name: Upload all_resolved.txt for HTTPX downstream
+      - name: Upload all_subdomains.txt for 
         uses: actions/upload-artifact@v4
         with:
           name: recon-results-${{ matrix.domain }}
           path: artifact_data
           if-no-files-found: error
 
-      - name: Trigger httpx-recon workflow in another repo
-        env:
-          PAT_TOKEN: ${{ secrets.PAT_TOKEN }}
-        run: |
-          curl -X POST \
-            -H "Accept: application/vnd.github.v3+json" \
-            -H "Authorization: Bearer $PAT_TOKEN" \
-            https://api.github.com/repos/Pcoder7/httpx-recon/actions/workflows/live_httpx.yml/dispatches \
-            -d '{
-              "ref": "main",
-              "inputs": {
-                "artifact_name": "recon-results-${{ matrix.domain }}",
-                "results_repo": "Pcoder7/recon-automation"
-                
-              }
-            }'
-            
     
       - name: Commit and Push Results for ${{ matrix.domain }}
         run: |
@@ -510,36 +176,8 @@ jobs:
             results/${{ matrix.domain }}/subfinder.txt \
             results/${{ matrix.domain }}/assetfinder.txt \
             results/${{ matrix.domain }}/amass.txt \
-            results/${{ matrix.domain }}/all_resolved.txt \
-             results/${{ matrix.domain }}/new_subdomains.txt \
-            results/${{ matrix.domain }}/puredns_combined.txt \
-            results/${{ matrix.domain }}/all_IP.txt \
-            results/${{ matrix.domain }}/no-cdn_IP.txt \
-            results/${{ matrix.domain }}/smap.txt \
-            results/${{ matrix.domain }}/sub-no-cdn.txt \
-            results/${{ matrix.domain }}/httpx-no-cdn.txt \
-            results/${{ matrix.domain }}/cdn-IP.txt \
-            results/${{ matrix.domain }}/sub-with-cdn.txt \
-            results/${{ matrix.domain }}/httpx-cdn.txt \
-            results/${{ matrix.domain }}/all_httpx.txt
+            results/${{ matrix.domain }}/all_subdomains.txt 
           git diff --cached --quiet || git commit -m "Update live scan for ${{ matrix.domain }}"
           git pull --rebase --autostash origin main
           git push
-
-          
-          
-  trigger_nuclei:
-    runs-on: ubuntu-latest
-    needs: scan
-    steps:
-      - name: Trigger Nuclei Scanning in nuclei-automation
-        env:
-          # For public repositories the default GITHUB_TOKEN may be used;
-          # For private repositories, store a PAT with "repo" scope as PAT_TOKEN.
-          PAT_TOKEN: ${{ secrets.PAT_TOKEN }}
-        run: |
-          curl -X POST \
-            -H "Accept: application/vnd.github.v3+json" \
-            -H "Authorization: token ${PAT_TOKEN}" \
-            https://api.github.com/repos/Pcoder7/nuclei-automation/dispatches \
-            -d '{"event_type": "trigger_nuclei", "client_payload": {"results_repo": "Pcoder7/recon-automation", "results_dir": "results"}}'
+        
