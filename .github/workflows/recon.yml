@@ -103,9 +103,8 @@ jobs:
           interlace \
           -t ${{ matrix.domain }} \
           -threads 3 \
-          -c "subfinder -d _target_ -silent -o results/${{ matrix.domain }}/subfinder.txt" \
-          -c "amass enum -passive -d _target_ -o results/${{ matrix.domain }}/amass.txt" \
-          -c "assetfinder --subs-only _target_ | anew -q results/${{ matrix.domain }}/assetfinder.txt" \
+          -cL cli.txt \
+          -o results/${{ matrix.domain }}
           -v
           # Combine results and deduplicate into combined.txt
           cat results/${{ matrix.domain }}/subfinder.txt results/${{ matrix.domain }}/assetfinder.txt results/${{ matrix.domain }}/amass.txt | sort -u > results/${{ matrix.domain }}/all_subdomains.txt
