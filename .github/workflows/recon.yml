@@ -104,7 +104,7 @@ jobs:
           -t ${{ matrix.domain }} \
           -threads 3 \
           -cL cli.txt \
-          -o results/${{ matrix.domain }}
+          -o results/${{ matrix.domain }} \
           -v
           # Combine results and deduplicate into combined.txt
           cat results/${{ matrix.domain }}/subfinder.txt results/${{ matrix.domain }}/assetfinder.txt results/${{ matrix.domain }}/amass.txt | sort -u > results/${{ matrix.domain }}/all_subdomains.txt
