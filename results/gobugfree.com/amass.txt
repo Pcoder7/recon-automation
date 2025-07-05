@@ -1,11 +1,11 @@
-media.gobugfree.com
+cdn.gobugfree.com
+kali.gobugfree.com
+id.gobugfree.com
 app.gobugfree.com
 www.gobugfree.com
-trail.gobugfree.com
-id.gobugfree.com
-kali.gobugfree.com
-cdn.gobugfree.com
-gobugfree.com
 demo.gobugfree.com
+gobugfree.com
+media.gobugfree.com
+trail.gobugfree.com
 analytics.gobugfree.com
 backend.gobugfree.com
