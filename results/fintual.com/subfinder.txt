@@ -1374,3 +1374,17 @@ tiempo.fintual.com
 cash.fintual.com
 jpmorgan.fintual.com
 www.jpmorgan.fintual.com
+discovery.fintual.com
+edu.fintual.com
+longplay.fintual.com
+rentabilidad.fintual.com
+www.fintual.com
+design.fintual.com
+blackrock.fintual.com
+conoce.fintual.com
+designtest.fintual.com
+go.fintual.com
+link.fintual.com
+ruta.fintual.com
+vanguard.fintual.com
+deeplink.fintual.com
