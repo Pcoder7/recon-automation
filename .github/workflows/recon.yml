@@ -140,7 +140,7 @@ jobs:
 
           # 5. Create a retry loop to handle potential race conditions during the push
           echo "Attempting to push changes with a retry loop..."
-          for i in {1..5}
+          for i in {1..10}
           do
             # First, pull the latest changes from the remote branch using rebase
             # This places our new commit on top of any other recent commits
