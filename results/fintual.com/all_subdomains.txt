@@ -1,6 +1,5 @@
 _amazonses.fintual.com
 _dmarc.fintual.com
-ayuda.fintual.com
 blackrock.fintual.com
 blocks.fintual.com
 blog.fintual.com
@@ -16,7 +15,6 @@ designtest.fintual.com
 discovery.fintual.com
 docs.fintual.com
 edu.fintual.com
-engineering.fintual.com
 fin.fintual.com
 fintual.com
 framer.fintual.com
