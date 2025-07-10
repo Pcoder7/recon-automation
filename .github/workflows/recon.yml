@@ -140,8 +140,8 @@ jobs:
           git config --global user.name 'github-actions[bot]'
           git config --global user.email 'github-actions[bot]@users.noreply.github.com'
 
-          git add results/${{ matrix.domain }}/dnsx.json \
-            results/${{ matrix.domain }}/subfinder.txt \
+          git add results/${{ matrix.domain }}/subfinder.txt \
+             results/${{ matrix.domain }}/shrewdeye.txt \
             results/${{ matrix.domain }}/assetfinder.txt \
             results/${{ matrix.domain }}/amass.txt \
             results/${{ matrix.domain }}/all_subdomains.txt
