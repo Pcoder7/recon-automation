@@ -104,7 +104,6 @@ jobs:
         shell: bash
         run: |
           python3 --version
-          sudo apt-get install jq
           git clone https://github.com/codingo/Interlace.git
           cd Interlace
           python3 -m pip install -r requirements.txt
@@ -116,6 +115,7 @@ jobs:
         shell: bash
         run: |
           echo "Scanning domain: ${{ matrix.domain }}"
+          oneforall --help
           interlace \
           -t ${{ matrix.domain }} \
           -threads 3 \
