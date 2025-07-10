@@ -121,46 +121,45 @@ jobs:
     
       - name: Commit and Push Results for ${{ matrix.domain }}
         run: |
-          
-          git config --global --add safe.directory "$GITHUB_WORKSPACE"        
+          git config --global --add safe.directory "$GITHUB_WORKSPACE"
           git config --global user.name 'github-actions[bot]'
           git config --global user.email 'github-actions[bot]@users.noreply.github.com'
+
           git add results/${{ matrix.domain }}/dnsx.json \
             results/${{ matrix.domain }}/subfinder.txt \
             results/${{ matrix.domain }}/assetfinder.txt \
             results/${{ matrix.domain }}/amass.txt \
-            results/${{ matrix.domain }}/all_subdomains.txt 
+            results/${{ matrix.domain }}/all_subdomains.txt
 
           if git diff --staged --quiet; then
             echo "No changes to commit. Exiting."
             exit 0
           fi
-          # 4. Commit the changes once, before the loop
+
+          # Commit your new recon results once
           git commit -m "Daily Recon: Update subdomain results"
 
-          # 5. Create a retry loop to handle potential race conditions during the push
-          echo "Attempting to push changes with a retry loop..."
-          for i in {1..10}
-          do
-            # First, pull the latest changes from the remote branch using rebase
-            # This places our new commit on top of any other recent commits
-            git pull --rebase
-
-            # Now, attempt to push
-            if git push; then
+          echo "Attempting to push changes with rebase+force-with-lease…"
+          for i in $(seq 1 10); do
+            # 1) Fetch the very latest from remote
+            
+            git fetch origin "$GITHUB_REF_NAME"
+            
+            # 2) Rebase your commit on top, stashing if needed
+            git rebase origin/"$GITHUB_REF_NAME" --autostash
+            
+            # 3) Push with lease (won't overwrite if remote advanced)
+            if git push --force-with-lease origin HEAD:"$GITHUB_REF_NAME"; then
               echo "Push successful on attempt $i."
-              # If push is successful, exit the script with a success code
               exit 0
             fi
-
-            # If push failed, wait for a bit before the next attempt
-            echo "Push failed on attempt $i. Retrying in 5 seconds..."
+            echo "Push failed on attempt $i. Sleeping 5s then retrying…"
             sleep 5
           done
 
-          # 6. If the loop completes without a successful push, exit with an error
-          echo "Failed to push changes after 5 attempts."
+          echo "Failed to push changes after 10 attempts."
           exit 1
+
   
   trigger_puredns:
     name: Trigger PureDNS Workflow
