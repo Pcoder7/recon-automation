@@ -79,17 +79,32 @@ jobs:
           else
             echo "smap already in cache"
           fi    
-         
+
+
+          if ! command -v anew >/dev/null; then
+            echo "Installing anew…"
+            go install -v github.com/tomnomnom/anew@latest
+          else
+            echo "anew already in cache"
+          fi
+
+          if ! command -v shrewdeye >/dev/null; then
+            echo "Installing Shrewdeye…"
+            go install -v github.com/omkar7505/shrewdeye@latest
+          else
+            echo "shrewdeye already in cache"
+          fi
+          
           pip3 install --no-cache-dir ipaddress
           
           echo "$HOME/go/bin" >> $GITHUB_PATH
           
   
-
       - name: Install interlace tool
         shell: bash
         run: |
           python3 --version
+          sudo apt-get install jq
           git clone https://github.com/codingo/Interlace.git
           cd Interlace
           python3 -m pip install -r requirements.txt
