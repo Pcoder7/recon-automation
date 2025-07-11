@@ -96,7 +96,6 @@ aero.bmw.com
 afs-management-dashboard.bmw.com
 ag.bmw.com
 aida.bmw.com
-aidaint1wen.bmw.com
 aidaint2ie.bmw.com
 aidaint2wen.bmw.com
 aidaintie.bmw.com
@@ -409,7 +408,6 @@ b2bua-int-gf4.bmw.com
 b2bua-int-new.bmw.com
 b2bua-int-old.bmw.com
 b2bua-int.bmw.com
-b2bua-prod-gf4.bmw.com
 b2bua.bmw.com
 b2bua2.bmw.com
 b2bum-awint.bmw.com
@@ -684,6 +682,7 @@ cctemea2int-rp.bmw.com
 cctza-rp.bmw.com
 cctzaint-rp.bmw.com
 cdc-int-us.bmw.com
+cdc-int.bmw.com
 cdc-us.bmw.com
 cdc.bmw.com
 cdn.api-int.bmw.com
@@ -1063,6 +1062,7 @@ dza-prod-oidc.bmw.com
 dza-prod-wen.bmw.com
 dza-prod.bmw.com
 dza.bmw.com
+e2e-2way-tmpnas-swl-sec2.bmw.com
 e2e-b2b-admin-user-tmpnas-swl-sec2.bmw.com
 e2e-b2b-asbccs.bmw.com
 e2e-b2b-fscast.bmw.com
@@ -1124,7 +1124,6 @@ edaws-pw.bmw.com
 edaws-sa.bmw.com
 edawsi-pw.bmw.com
 edawsi-sa.bmw.com
-edawsi.bmw.com
 edms-test.bmw.com
 edms.bmw.com
 edocument-qb-int2.bmw.com
@@ -1177,6 +1176,7 @@ engagehk.bmw.com
 engineoil-approval-gf4-int.bmw.com
 engineoil-approval-gf4-prod.bmw.com
 engineoil-approval-int.bmw.com
+engineoil-approval-int5.bmw.com
 engineoil-approval-test-oidc.bmw.com
 engineoil-approval.bmw.com
 eo.approval-bmwgroup-websites.bmw.com
@@ -1362,6 +1362,7 @@ fusecard.bmw.com
 fz-222hisslcertificateadmin@list.bmw.com
 fz-444z-wlan@list.bmw.com
 fzgsecca-e2e.bmw.com
+fzgsecca.bmw.com
 gateway.trackandtrace.bmw.com
 gcdm-business-services-i.bmw.com
 gcdm-business-services-t.bmw.com
@@ -1623,7 +1624,6 @@ ipq-i.bmw.com
 ipq-i1.bmw.com
 ipq-i2.bmw.com
 ipq-i3.bmw.com
-ipq-i4.bmw.com
 ipq-lr7-i1.bmw.com
 ipq-lr7-i2.bmw.com
 ipq-lr7-i4.bmw.com
@@ -1744,6 +1744,7 @@ lt-int.bmw.com
 lt.bmw.com
 lteai63ext.bmw.com
 lterm-int.bmw.com
+lterm-temp.bmw.com
 lterm.bmw.com
 lterm5-int.bmw.com
 ltvaas1-testapp.bmw.com
@@ -2057,7 +2058,6 @@ pluto-t2.bmw.com
 pluto-t2automat.bmw.com
 pluto-test1.bmw.com
 plw-int.bmw.com
-plw-int1.bmw.com
 plw-prod.bmw.com
 plw-prod1.bmw.com
 plw.bmw.com
@@ -2356,7 +2356,6 @@ smc2-cn-e2e.bmw.com
 smc2-cn-prod.bmw.com
 smc2-emea-e2e.bmw.com
 smc2-emea-prod.bmw.com
-smc2-us-e2e.bmw.com
 smc2-us-prod.bmw.com
 smc2-us-qa.bmw.com
 smd.bmw.de@list.bmw.com
@@ -2541,6 +2540,7 @@ telex.bmw.com
 temp-fzgsecca.bmw.com
 temp-iff-blue.bmw.com
 temp-iff-blue2.bmw.com
+temp-iff-green.bmw.com
 temp-iff-green2.bmw.com
 tereg-b2b-i.bmw.com
 tereg-b2b.bmw.com
@@ -2651,6 +2651,7 @@ tsp-e2e-cn.bmw.com
 tsp-e2e-us.bmw.com
 tsp-int-emea.bmw.com
 tsp-prod-emea.bmw.com
+tsp-test-emea.bmw.com
 tspartner-e2e-cn.bmw.com
 tspartner-e2e-emea-m2m.bmw.com
 tspartner-e2e-emea.bmw.com
@@ -2754,7 +2755,6 @@ vip-apisec-int.bmw.com
 vip-int-wen4-ig.bmw.com
 vip-int.bmw.com
 vip-intapisec.bmw.com
-vip-next-int-gf5-ig.bmw.com
 vip-next-int-gf5.bmw.com
 vip-next-testentw2-gf5.bmw.com
 vip-next-testentwmig-gf5.bmw.com
