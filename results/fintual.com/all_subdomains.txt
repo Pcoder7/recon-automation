@@ -52,5 +52,6 @@ vanguard.fintual.com
 vpn.fintual.com
 www.cash.fintual.com
 www.fintual.com
+www.go.fintual.com
 www.itau.fintual.com
 www.jpmorgan.fintual.com
