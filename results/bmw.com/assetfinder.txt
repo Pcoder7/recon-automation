@@ -1601,3 +1601,4 @@ parknow-ltr@bmw.com
 classic_ssl@bmw.com
 youtube.bmw.com
 sra-operation@list.bmw.com
+vpn2.bmw.com
