@@ -420,3 +420,11 @@ demo.gobugfree.com
 id.gobugfree.com
 www.gobugfree.com
 media.gobugfree.com
+media.gobugfree.com
+cdn.gobugfree.com
+id.gobugfree.com
+www.gobugfree.com
+kali.gobugfree.com
+trail.gobugfree.com
+app.gobugfree.com
+demo.gobugfree.com
