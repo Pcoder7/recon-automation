@@ -639,6 +639,7 @@ cap.sfchina.bmw.com
 cap.sfchina.bmw.com.cn
 carmen-cn-b2b-i.bmw.com
 carmen-cn-b2b.bmw.com
+casa-cn-e2e-b2b-internet.bmw.com
 casa-cn-i-api.bmw.com
 casa-cn-i.bmw.com
 casa-cn-p-api.bmw.com
@@ -684,6 +685,7 @@ cctemea2int-rp.bmw.com
 cctza-rp.bmw.com
 cctzaint-rp.bmw.com
 cdc-int-us.bmw.com
+cdc-int.bmw.com
 cdc-us.bmw.com
 cdc.bmw.com
 cdn.api-int.bmw.com
@@ -1062,7 +1064,6 @@ dza-prod-oidc.bmw.com
 dza-prod-wen.bmw.com
 dza-prod.bmw.com
 dza.bmw.com
-e2e-2way-tmpnas-swl-sec2.bmw.com
 e2e-b2b-admin-user-tmpnas-swl-sec2.bmw.com
 e2e-b2b-asbccs.bmw.com
 e2e-b2b-fscast.bmw.com
@@ -1079,6 +1080,7 @@ e2e-b2b-webeamnext-swl-sec2.bmw.com
 e2e-fzgsecca.bmw.com
 e2e-gui-user-swl-sec2.bmw.com
 e2e-mgusecdevbe.bmw.com
+e2e-rest-swlsec2.bmw.com
 e2e-swl-sec.bmw.com
 e2e-swl-sec2.bmw.com
 eaem.bmw.com
@@ -1263,7 +1265,6 @@ facts-i1.bmw.com
 facts-int-new.bmw.com
 facts-int.bmw.com
 facts-int1-new.bmw.com
-facts-int1.bmw.com
 facts-new.bmw.com
 facts-p.bmw.com
 facts-prod-n.bmw.com
@@ -1419,7 +1420,6 @@ gss-coop-next-int.bmw.com
 gss-coop-next-pub-int.bmw.com
 gss-i.bmw.com
 gss-next-coop.bmw.com
-hakat-b2b-int.bmw.com
 hakat-b2b-test.bmw.com
 hdds-i.bmw.com
 hdds.bmw.com
@@ -1667,7 +1667,6 @@ itms-i.bmw.com
 itms-int-gf5.bmw.com
 itms-int-rest.bmw.com
 itms-int-temp.bmw.com
-itms-int.bmw.com
 itms-integ-rest.bmw.com
 itms-integ.bmw.com
 itms-new-rest.bmw.com
