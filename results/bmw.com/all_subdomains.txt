@@ -202,6 +202,7 @@ asbc-osb-lapi-emea-prod.bmw.com
 asbc-osb-lapi-exploration.bmw.com
 asbc-osb-lapi-production.bmw.com
 asbc-osb-lapi.bmw.com
+asbc-osb-portal-iam.bmw.com
 asbc-osb-ui-emea-e2e-b2b.bmw.com
 asbc-osb-ui-emea-e2e-dmz.bmw.com
 asbc-osb-ui-emea-e2e.bmw.com
@@ -958,6 +959,7 @@ dems-gf4.bmw.com
 dems-int-emea.bmw.com
 deploydirectori-dummy.bmw.com
 deploydirectori.bmw.com
+dev-fusecard-admin.bmw.com
 dev.approval-bmwgroup-websites.bmw.com
 dev.com.bmw.com
 dev.crm-i.bmw.com
@@ -1178,7 +1180,6 @@ engagehk.bmw.com
 engineoil-approval-gf4-int.bmw.com
 engineoil-approval-gf4-prod.bmw.com
 engineoil-approval-int.bmw.com
-engineoil-approval-int5.bmw.com
 engineoil-approval-test-oidc.bmw.com
 engineoil-approval.bmw.com
 eo.approval-bmwgroup-websites.bmw.com
@@ -1214,6 +1215,7 @@ esa1-us-i-b2b.bmw.com
 esa2-us-b2b.bmw.com
 esaus-i.bmw.com
 esaus.bmw.com
+esds-i.bmw.com
 etdeploy.bmw.com
 etik-new.bmw.com
 etik-p.bmw.com
@@ -1300,6 +1302,7 @@ famos-uk-prod.bmw.com
 famos-uk.bmw.com
 favor-cockpit.bmw.com
 favor.bmw.com
+fbmv-int-2fa.bmw.com
 fbmv-int-new.bmw.com
 fbmv-int.bmw.com
 fbmv-new.bmw.com
@@ -1429,7 +1432,6 @@ hotspot@bmw.com
 hradar-i2-next.bmw.com
 hradar-next.bmw.com
 hrci.bmw.com
-hrlapisec-int2.bmw.com
 hrm.bmw.com
 hsplw-int-china.bmw.com
 hsplw-int1.bmw.com
@@ -1871,7 +1873,6 @@ motorcyclebyo-t.bmw.com
 motorradconnected.bmw.com
 mscaksblue.bmw.com
 mscaksgreen.bmw.com
-msds-i.bmw.com
 msds-prod.bmw.com
 msds.bmw.com
 msdsus-t.bmw.com
@@ -2167,6 +2168,7 @@ rema-i5.bmw.com
 rema-i7.bmw.com
 rema-p.bmw.com
 rema-p4.bmw.com
+rema-p5.bmw.com
 rema-p7.bmw.com
 rema-p8.bmw.com
 rema-t4.bmw.com
@@ -2455,6 +2457,7 @@ swag-int-emea.bmw.com
 swag-prod-emea.bmw.com
 swhrl.bmw.com
 swhrli2.bmw.com
+swhrli3.bmw.com
 swhrli4.bmw.com
 swhrli5.bmw.com
 swhrli6.bmw.com
@@ -2469,6 +2472,7 @@ swl-tmp.bmw.com
 swl.bmw.com
 swlin11.bmw.com
 swlint10ie.bmw.com
+swlint11.bmw.com
 swlint12.bmw.com
 swlint12ie.bmw.com
 swlint1ie.bmw.com
@@ -2567,7 +2571,6 @@ tll-int2.bmw.com
 tll-prod2.bmw.com
 tll.bmw.com
 tllnet.bmw.com
-tlt-int.bmw.com
 tlt.bmw.com
 tmisasia.bmw.com
 tms-int-b2b.bmw.com
@@ -2647,6 +2650,7 @@ tsp-e2e-cn.bmw.com
 tsp-e2e-us.bmw.com
 tsp-int-emea.bmw.com
 tsp-prod-emea.bmw.com
+tsp-test-emea.bmw.com
 tspartner-e2e-cn.bmw.com
 tspartner-e2e-emea-m2m.bmw.com
 tspartner-e2e-emea.bmw.com
@@ -3057,7 +3061,6 @@ xpita-b2b-green.bmw.com
 xpita-b2b-old.bmw.com
 xpita-b2b.bmw.com
 xpita-dev-b2b.bmw.com
-xpita-int-b2b-blue.bmw.com
 xpita-int-b2b-green.bmw.com
 xpita-int-b2b-old.bmw.com
 xpita-int-b2b.bmw.com
