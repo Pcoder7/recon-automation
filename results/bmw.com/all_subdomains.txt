@@ -202,6 +202,7 @@ asbc-osb-lapi-emea-prod.bmw.com
 asbc-osb-lapi-exploration.bmw.com
 asbc-osb-lapi-production.bmw.com
 asbc-osb-lapi.bmw.com
+asbc-osb-portal-iam.bmw.com
 asbc-osb-ui-emea-e2e-b2b.bmw.com
 asbc-osb-ui-emea-e2e-dmz.bmw.com
 asbc-osb-ui-emea-e2e.bmw.com
@@ -232,6 +233,7 @@ asc-ha-int4-inter3.bmw.com
 asc-ha-inter1.bmw.com
 asc-ha-inter2.bmw.com
 asc-ha-inter3.bmw.com
+asc-ig-int3.bmw.com
 asc-int.bmw.com
 asc-int3-ha-wig.bmw.com
 asc-int3-wig.bmw.com
@@ -683,6 +685,7 @@ cctemea2int-rp.bmw.com
 cctza-rp.bmw.com
 cctzaint-rp.bmw.com
 cdc-int-us.bmw.com
+cdc-int.bmw.com
 cdc-us.bmw.com
 cdc.bmw.com
 cdn.api-int.bmw.com
@@ -956,6 +959,7 @@ dems-gf4.bmw.com
 dems-int-emea.bmw.com
 deploydirectori-dummy.bmw.com
 deploydirectori.bmw.com
+dev-fusecard-admin.bmw.com
 dev.approval-bmwgroup-websites.bmw.com
 dev.com.bmw.com
 dev.crm-i.bmw.com
@@ -1267,7 +1271,6 @@ facts-new.bmw.com
 facts-p.bmw.com
 facts-prod-n.bmw.com
 facts-prod-new.bmw.com
-facts-prod.bmw.com
 facts.bmw.com
 factsint.bmw.com
 factstool.bmw.com
@@ -1738,6 +1741,7 @@ lpkm.bmw.com
 lpkmi.bmw.com
 lpkmkomp-prod-gf5.bmw.com
 lpkmnext-int.bmw.com
+lpkmnext2-int.bmw.com
 lpptest.bmw.com
 lpvaas1-web.bmw.com
 lpvaas2-web.bmw.com
@@ -1870,6 +1874,7 @@ motorcyclebyo-t.bmw.com
 motorradconnected.bmw.com
 mscaksblue.bmw.com
 mscaksgreen.bmw.com
+msds-i.bmw.com
 msds-prod.bmw.com
 msds.bmw.com
 msdsus-t.bmw.com
@@ -2080,6 +2085,7 @@ processmonitoring-test.bmw.com
 prod-2way-nasfree-swl-sec1.bmw.com
 prod-2way-tmpnas-swl-sec2.bmw.com
 prod-b2b-nasfree-swl-sec1.bmw.com
+prod-b2b-user-tmpnas-swl-sec2.bmw.com
 prod-bdqvnext.bmw.com
 prod-cop.bmw.com
 prod-teleservicefleet.bmw.com
@@ -2151,7 +2157,6 @@ rcss-prod-s1.bmw.com
 rcss-prod-s2.bmw.com
 rcss-test-s1.bmw.com
 rcsscc-int.bmw.com
-rcsscc-test.bmw.com
 rcsscc.bmw.com
 rebrush.bmw.com
 redirect.bmw.com
@@ -2323,7 +2328,6 @@ sfa-s-emea-prod.bmw.com
 sfchina.bmw.com
 sfit-ru-request@bmw.com
 sftpcontent.bmw.com
-sg-test1.bmw.com
 sgem-es-int.bmw.com
 sgem-int.bmw.com
 sgem.bmw.com
@@ -2508,6 +2512,7 @@ tais-uss-api-int.bmw.com
 tais-uss-api-prod.bmw.com
 tais-uss-api-test.bmw.com
 tais-uss-web-int.bmw.com
+tais-uss-web-prod.bmw.com
 taplaus.bmw.com
 tbm-int-t1-b2b.bmw.com
 tbm-int-t1.bmw.com
@@ -2761,7 +2766,6 @@ vip-studs-apisec-utest.bmw.com
 vip-studs-int-wen4-ig.bmw.com
 vip-studs-int-wen4.bmw.com
 vip-studs-int.bmw.com
-vip-studs-prod-wen4-ig.bmw.com
 vip-studs-prod-wen4.bmw.com
 vip-studs-prod.bmw.com
 vip-studs-test.bmw.com
