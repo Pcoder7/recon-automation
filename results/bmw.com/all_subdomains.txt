@@ -639,7 +639,6 @@ cap.sfchina.bmw.com
 cap.sfchina.bmw.com.cn
 carmen-cn-b2b-i.bmw.com
 carmen-cn-b2b.bmw.com
-casa-cn-e2e-b2b-internet.bmw.com
 casa-cn-i-api.bmw.com
 casa-cn-i.bmw.com
 casa-cn-p-api.bmw.com
@@ -685,7 +684,6 @@ cctemea2int-rp.bmw.com
 cctza-rp.bmw.com
 cctzaint-rp.bmw.com
 cdc-int-us.bmw.com
-cdc-int.bmw.com
 cdc-us.bmw.com
 cdc.bmw.com
 cdn.api-int.bmw.com
@@ -1081,7 +1079,6 @@ e2e-b2b-webeamnext-swl-sec2.bmw.com
 e2e-fzgsecca.bmw.com
 e2e-gui-user-swl-sec2.bmw.com
 e2e-mgusecdevbe.bmw.com
-e2e-rest-swlsec2.bmw.com
 e2e-swl-sec.bmw.com
 e2e-swl-sec2.bmw.com
 eaem.bmw.com
@@ -1434,7 +1431,6 @@ hotspot@bmw.com
 hradar-i2-next.bmw.com
 hradar-next.bmw.com
 hrci.bmw.com
-hrlapisec-int2.bmw.com
 hrm.bmw.com
 hsplw-int-china.bmw.com
 hsplw-int1.bmw.com
@@ -1671,6 +1667,7 @@ itms-i.bmw.com
 itms-int-gf5.bmw.com
 itms-int-rest.bmw.com
 itms-int-temp.bmw.com
+itms-int.bmw.com
 itms-integ-rest.bmw.com
 itms-integ.bmw.com
 itms-new-rest.bmw.com
@@ -1875,12 +1872,14 @@ motorcyclebyo-t.bmw.com
 motorradconnected.bmw.com
 mscaksblue.bmw.com
 mscaksgreen.bmw.com
+msds-i.bmw.com
 msds-prod.bmw.com
 msds.bmw.com
 msdsus-t.bmw.com
 mwp-s.bmw.com
 mwp.bmw.com
 mwp5-edu.bmw.com
+mwp5-int.bmw.com
 mwp5-s.bmw.com
 mwp5-test.bmw.com
 mwp5.bmw.com
@@ -2053,6 +2052,7 @@ plaza-test.bmw.com
 plaza.bmw.com
 pluto-china.bmw.com
 pluto-i.bmw.com
+pluto-int3-bba.bmw.com
 pluto-p.bmw.com
 pluto-t.bmw.com
 pluto-t2.bmw.com
@@ -2242,6 +2242,7 @@ rtl-services-america-int-pilot.bmw.com
 ruhelpdesk@bmw.com
 rvm-int.bmw.com
 sap.trackandtrace.bmw.com
+sapweb-int.bmw.com
 sapweb-int2.bmw.com
 sapweb-prod.bmw.com
 sapweb-prod2.bmw.com
@@ -2472,6 +2473,7 @@ swl-tmp.bmw.com
 swl.bmw.com
 swlin11.bmw.com
 swlint10ie.bmw.com
+swlint11.bmw.com
 swlint12.bmw.com
 swlint12ie.bmw.com
 swlint1ie.bmw.com
@@ -2650,6 +2652,7 @@ tsp-e2e-cn.bmw.com
 tsp-e2e-us.bmw.com
 tsp-int-emea.bmw.com
 tsp-prod-emea.bmw.com
+tsp-test-emea.bmw.com
 tspartner-e2e-cn.bmw.com
 tspartner-e2e-emea-m2m.bmw.com
 tspartner-e2e-emea.bmw.com
