@@ -80,7 +80,14 @@ jobs:
             echo "smap already in cache"
           fi    
 
-
+          # Installing inscope
+          if ! command -v inscope >/dev/null; then
+            echo "Installing inscope…"
+            go install -v github.com/tomnomnom/hacks/inscope@latest
+          else
+            echo "inscope already in cache"
+          fi    
+          
           if ! command -v anew >/dev/null; then
             echo "Installing anew…"
             go install -v github.com/tomnomnom/anew@latest
