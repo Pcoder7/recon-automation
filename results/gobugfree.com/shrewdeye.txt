@@ -142,3 +142,11 @@ app.gobugfree.com
 id.gobugfree.com
 analytics.gobugfree.com
 gobugfree.com
+cdn.gobugfree.com
+demo.gobugfree.com
+media.gobugfree.com
+www.gobugfree.com
+app.gobugfree.com
+id.gobugfree.com
+analytics.gobugfree.com
+gobugfree.com
