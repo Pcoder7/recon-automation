@@ -1,6 +1,4 @@
-analytics.gobugfree.com
 app.gobugfree.com
-backend.gobugfree.com
 cdn.gobugfree.com
 demo.gobugfree.com
 gobugfree.com
