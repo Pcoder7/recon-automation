@@ -202,6 +202,7 @@ asbc-osb-lapi-emea-prod.bmw.com
 asbc-osb-lapi-exploration.bmw.com
 asbc-osb-lapi-production.bmw.com
 asbc-osb-lapi.bmw.com
+asbc-osb-portal-iam.bmw.com
 asbc-osb-ui-emea-e2e-b2b.bmw.com
 asbc-osb-ui-emea-e2e-dmz.bmw.com
 asbc-osb-ui-emea-e2e.bmw.com
@@ -326,7 +327,6 @@ b2b-mig.bmw.com
 b2b-o.bmw.com
 b2b-pi-int.bmw.com
 b2b-pi.bmw.com
-b2b-prod-wen.bmw.com
 b2b-sra.bmw.com
 b2b-sso-sra.bmw.com
 b2b-sso-wen.bmw.com
@@ -958,6 +958,7 @@ dems-gf4.bmw.com
 dems-int-emea.bmw.com
 deploydirectori-dummy.bmw.com
 deploydirectori.bmw.com
+dev-fusecard-admin.bmw.com
 dev.approval-bmwgroup-websites.bmw.com
 dev.com.bmw.com
 dev.crm-i.bmw.com
@@ -1019,7 +1020,6 @@ dragon-preprd.bmw.com
 driversguide-int.bmw.com
 driversguide.bmw.com
 dsl.service.bmw.com
-dsmon-bba-int.bmw.com
 dsmon-bba.bmw.com
 dsmon-bcs-int.bmw.com
 dsmon-bcs.bmw.com
@@ -1393,7 +1393,6 @@ glbs013-int.bmw.com
 globalx-int-1.bmw.com
 globalx-int-2.bmw.com
 globalx-test-1.bmw.com
-globalx.bmw.com
 glv2-test.bmw.com
 gq1.com.bmw.com
 grpw-int-a1-b2b.bmw.com
@@ -1874,6 +1873,7 @@ motorcyclebyo-t.bmw.com
 motorradconnected.bmw.com
 mscaksblue.bmw.com
 mscaksgreen.bmw.com
+msds-i.bmw.com
 msds-prod.bmw.com
 msds.bmw.com
 msdsus-t.bmw.com
@@ -2302,6 +2302,7 @@ services.incentivesus-i.bmw.com
 services.incentivesus.bmw.com
 services.labs.bmw.com
 services.recallsvc-i.bmw.com
+services.recallsvc.bmw.com
 services.tisnet-int.bmw.com
 services.vendorservice-i.bmw.com
 services.verification-i.bmw.com
@@ -2347,7 +2348,6 @@ sip.partner.bmw.com
 sip.partner.bmw.com.ar
 sip.partner.bmw.com.my
 sip.rtcbmw.com
-slotbooking-int.bmw.com
 slotbooking.bmw.com
 slp-b2b.bmw.com
 slwa-e2e.bmw.com
@@ -2514,7 +2514,6 @@ tais-uss-api-int.bmw.com
 tais-uss-api-prod.bmw.com
 tais-uss-api-test.bmw.com
 tais-uss-web-int.bmw.com
-tais-uss-web-prod.bmw.com
 taplaus.bmw.com
 tbm-int-t1-b2b.bmw.com
 tbm-int-t1.bmw.com
@@ -2768,6 +2767,7 @@ vip-studs-apisec-utest.bmw.com
 vip-studs-int-wen4-ig.bmw.com
 vip-studs-int-wen4.bmw.com
 vip-studs-int.bmw.com
+vip-studs-prod-wen4-ig.bmw.com
 vip-studs-prod-wen4.bmw.com
 vip-studs-prod.bmw.com
 vip-studs-test.bmw.com
