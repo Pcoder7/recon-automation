@@ -96,7 +96,6 @@ aero.bmw.com
 afs-management-dashboard.bmw.com
 ag.bmw.com
 aida.bmw.com
-aidaint1wen.bmw.com
 aidaint2ie.bmw.com
 aidaint2wen.bmw.com
 aidaintie.bmw.com
@@ -202,6 +201,7 @@ asbc-osb-lapi-emea-prod.bmw.com
 asbc-osb-lapi-exploration.bmw.com
 asbc-osb-lapi-production.bmw.com
 asbc-osb-lapi.bmw.com
+asbc-osb-portal-iam.bmw.com
 asbc-osb-ui-emea-e2e-b2b.bmw.com
 asbc-osb-ui-emea-e2e-dmz.bmw.com
 asbc-osb-ui-emea-e2e.bmw.com
@@ -638,7 +638,6 @@ cap.sfchina.bmw.com
 cap.sfchina.bmw.com.cn
 carmen-cn-b2b-i.bmw.com
 carmen-cn-b2b.bmw.com
-casa-cn-e2e-b2b-internet.bmw.com
 casa-cn-i-api.bmw.com
 casa-cn-i.bmw.com
 casa-cn-p-api.bmw.com
@@ -959,6 +958,7 @@ dems-gf4.bmw.com
 dems-int-emea.bmw.com
 deploydirectori-dummy.bmw.com
 deploydirectori.bmw.com
+dev-fusecard-admin.bmw.com
 dev.approval-bmwgroup-websites.bmw.com
 dev.com.bmw.com
 dev.crm-i.bmw.com
@@ -1018,7 +1018,9 @@ dragon-pos-int.bmw.com
 dragon-prd.bmw.com
 dragon-preprd.bmw.com
 driversguide-int.bmw.com
+driversguide.bmw.com
 dsl.service.bmw.com
+dsmon-bba-int.bmw.com
 dsmon-bba.bmw.com
 dsmon-bcs-int.bmw.com
 dsmon-bcs.bmw.com
@@ -1433,7 +1435,6 @@ hotspot@bmw.com
 hradar-i2-next.bmw.com
 hradar-next.bmw.com
 hrci.bmw.com
-hrlapisec-int2.bmw.com
 hrm.bmw.com
 hsplw-int-china.bmw.com
 hsplw-int1.bmw.com
@@ -1914,6 +1915,7 @@ myworkplace-s.bmw.com
 myworkplace-test.bmw.com
 myworkplace.bmw.com
 neainfra-eu-int-mfa.bmw.com
+neainfra-eu-int-strong.bmw.com
 neainfra-eu-mfa.bmw.com
 neainfra-eu-strong.bmw.com
 neainfra-eu-test-mfa.bmw.com
@@ -1974,7 +1976,6 @@ optibe-temp.bmw.com
 optibe-test.bmw.com
 optibe.bmw.com
 orcan-int.bmw.com
-orcan.bmw.com
 origin.bmw.com
 oss-app-prod.bmw.com
 otb-i.bmw.com
@@ -2053,6 +2054,7 @@ plaza-test.bmw.com
 plaza.bmw.com
 pluto-china.bmw.com
 pluto-i.bmw.com
+pluto-int3-bba.bmw.com
 pluto-p.bmw.com
 pluto-t.bmw.com
 pluto-t2.bmw.com
@@ -2122,7 +2124,6 @@ publish-train.bmw.com
 publishing-int.bmw.com
 publishing-train.bmw.com
 publishing.bmw.com
-pumaigfb2b.bmw.com
 pumapgfb2b.bmw.com
 qa-bps.bmw.com
 qa-nv.bmw.com
@@ -2173,6 +2174,7 @@ rema-p5.bmw.com
 rema-p7.bmw.com
 rema-p8.bmw.com
 rema-t4.bmw.com
+rema-t7.bmw.com
 rema.bmw.com
 remaapi-i.bmw.com
 remaapi-i4.bmw.com
@@ -2271,12 +2273,12 @@ secure.sportmarketing.bmw.com
 securelogin.bmw.com
 securetransport@list.bmw.com
 semcrmjptolmatch.bmw.com
-sera-i1-p5.bmw.com
 sera-i1.bmw.com
 sera-i2.bmw.com
 sera-i4.bmw.com
 sera-p.bmw.com
 sera.bmw.com
+seraint1.bmw.com
 service.bmw.com
 servicenotification.bmw.com
 services-i.dealer.bmw.com
@@ -2623,7 +2625,6 @@ ts-cts-ui-prod-emea.bmw.com
 ts-cts-ui-prod-us.bmw.com
 tsara-b2b-cn.bmw.com
 tsara-b2b-oidc.bmw.com
-tsara-b2b.bmw.com
 tsara-int-b2b-oidc.bmw.com
 tsara-int-b2b-webeam.bmw.com
 tsara-int-b2b.bmw.com
@@ -2668,7 +2669,6 @@ tssbemea-intgf.bmw.com
 tssbemea-temp.bmw.com
 tssbemea.bmw.com
 tssbna-int.bmw.com
-tssbna-intgf.bmw.com
 tssbna-prod.bmw.com
 tssbna-prodgf.bmw.com
 tssbus-int.bmw.com
@@ -2746,7 +2746,6 @@ viewjuridico.bmw.com
 vin17-srv-rc.bmw.com
 vintracking-int-next.bmw.com
 vintracking-int.bmw.com
-vintracking-next.bmw.com
 vintracking.bmw.com
 vip-apisec-int.bmw.com
 vip-int-wen4-ig.bmw.com
@@ -2766,6 +2765,7 @@ vip-studs-apisec-utest.bmw.com
 vip-studs-int-wen4-ig.bmw.com
 vip-studs-int-wen4.bmw.com
 vip-studs-int.bmw.com
+vip-studs-prod-wen4-ig.bmw.com
 vip-studs-prod-wen4.bmw.com
 vip-studs-prod.bmw.com
 vip-studs-test.bmw.com
@@ -3058,7 +3058,6 @@ xpita-b2b-green.bmw.com
 xpita-b2b-old.bmw.com
 xpita-b2b.bmw.com
 xpita-dev-b2b.bmw.com
-xpita-int-b2b-blue.bmw.com
 xpita-int-b2b-green.bmw.com
 xpita-int-b2b-old.bmw.com
 xpita-int-b2b.bmw.com
