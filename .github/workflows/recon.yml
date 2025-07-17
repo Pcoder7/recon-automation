@@ -140,43 +140,106 @@ jobs:
           path: results/${{ matrix.domain }}
           retention-days: 1
 
+  commit_results:
+    name: Commit All Recon Results
+    # This job runs after all parallel scan jobs are finished.
+    needs: scan
+    # 'if: always()' ensures we commit results from successful scans even if some scans failed.
+    if: always()
+    runs-on: ubuntu-latest
+    container:
+      # Use the same container to ensure tools like 'anew' are available.
+      image: ghcr.io/pcoder7/spider-puredns-actions:latest
+      credentials:
+        username: ${{ secrets.GHCR_USER }}
+        password: ${{ secrets.GHCR_TOKEN }}
+    steps:
+      - name: Download all recon artifacts
+        uses: actions/download-artifact@v4
+        with:
+          # Download all artifacts into separate directories under 'temp-results'
+          pattern: recon-results-*
+          path: temp-results/
 
-    
-      - name: Commit and Push Results for ${{ matrix.domain }}
+      - name: Organize and Push to store-recon
+        env:
+          STORE_RECON_PAT: ${{ secrets.STORE_RECON_PAT }}
+          STORE_REPO_OWNER: "YourOtherAccountUsername" # IMPORTANT: Change to the owner of store-recon
+          STORE_REPO_NAME: "store-recon"
         run: |
-          git config --global --add safe.directory "$GITHUB_WORKSPACE"
-          git config --global user.name 'github-actions[bot]'
-          git config --global user.email 'github-actions[bot]@users.noreply.github.com'
+          set -e # Exit immediately if a command fails
 
-          git add results/${{ matrix.domain }}/
-
-          if git diff --staged --quiet; then
-            echo "No changes to commit. Exiting."
+          if [ ! -d "temp-results" ] || [ -z "$(ls -A temp-results)" ]; then
+            echo "No artifacts found to process. Exiting."
             exit 0
           fi
 
-          # Commit your new recon results once
-          git commit -m "Daily Recon: Update subdomain results"
+          echo "Cloning the 'store-recon' repository..."
+          CLONE_DIR=$(mktemp -d)
+          git clone "https://x-access-token:${STORE_RECON_PAT}@github.com/${STORE_REPO_OWNER}/${STORE_REPO_NAME}.git" "$CLONE_DIR"
+          cd "$CLONE_DIR"
 
-          echo "Attempting to push changes with rebase+force-with-lease…"
-          for i in $(seq 1 10); do
-            # 1) Fetch the very latest from remote
-            
-            git fetch origin "$GITHUB_REF_NAME"
-            
-            # 2) Rebase your commit on top, stashing if needed
-            git rebase origin/"$GITHUB_REF_NAME" --autostash
-            
-            # 3) Push with lease (won't overwrite if remote advanced)
-            if git push --force-with-lease origin HEAD:"$GITHUB_REF_NAME"; then
-              echo "Push successful on attempt $i."
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+
+          # Robust retry loop to handle any remote race conditions on the store-recon repo
+          for i in {1..10}; do
+            # Always start from the freshest state of the remote branch
+            git fetch origin main
+            git reset --hard origin/main
+            git pull origin main --rebase
+
+            echo "Merging new results into the repository..."
+
+            # Iterate through each downloaded artifact directory (e.g., 'temp-results/recon-results-domain1.com')
+            for artifact_path in ${GITHUB_WORKSPACE}/temp-results/*; do
+              if [ -d "$artifact_path" ]; then
+                source_file="$artifact_path/all_subdomains.txt"
+                
+                # Check if the primary results file exists in the artifact
+                if [ -f "$source_file" ]; then
+                  # Extract the domain name by removing the 'recon-results-' prefix from the directory name
+                  domain=$(basename "$artifact_path" | sed 's/^recon-results-//')
+                  
+                  # Define the target directory structure as requested: 'results/domain.com/'
+                  target_dir="results/$domain"
+                  target_file="$target_dir/all_subdomains.txt"
+
+                  echo "Processing results for: $domain"
+                  
+                  # Create the target directory (e.g., 'results/domain1.com').
+                  # 'mkdir -p' will do nothing if the directory already exists. It will not overwrite.
+                  mkdir -p "$target_dir"
+
+                  # This is the key command for your requirement:
+                  # It reads the new results and appends only the unique, new lines to the target file.
+                  # If the target file doesn't exist, 'anew' creates it.
+                  cat "$source_file" | anew -q "$target_file"
+                fi
+              fi
+            done
+
+            git add results/
+
+            # Check for changes before committing to avoid empty commits
+            if git diff --staged --quiet; then
+              echo "No new unique subdomains found. Repository is already up-to-date."
               exit 0
             fi
-            echo "Push failed on attempt $i. Sleeping 5s then retrying…"
-            sleep 5
+
+            echo "Committing updated results..."
+            git commit -m "Daily Recon: Update subdomain results (Run: ${{ github.run_id }})"
+
+            if git push origin main; then
+              echo "Successfully pushed results to ${STORE_REPO_NAME} on attempt #$i."
+              exit 0 # Success!
+            else
+              echo "Push failed on attempt #$i. Retrying in 15 seconds..."
+              sleep 15
+            fi
           done
 
-          echo "Failed to push changes after 10 attempts."
+          echo "ERROR: Could not push results to ${STORE_REPO_NAME} after 10 attempts."
           exit 1
 
   
