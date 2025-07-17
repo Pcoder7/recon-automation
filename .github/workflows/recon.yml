@@ -138,6 +138,7 @@ jobs:
         with:
           name: recon-results-${{ matrix.domain }}
           path: results/${{ matrix.domain }}
+          retention-days: 1
 
 
     
