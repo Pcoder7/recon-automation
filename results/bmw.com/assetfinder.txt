@@ -1603,3 +1603,4 @@ youtube.bmw.com
 sra-operation@list.bmw.com
 vpn2.bmw.com
 ofco-wenf.ext.bmw.com
+pita-b2b.bmw.com
