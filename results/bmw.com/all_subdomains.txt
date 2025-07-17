@@ -192,7 +192,6 @@ asbc-osb-lapi-emea-prod-dmz.bmw.com
 asbc-osb-lapi-emea-prod.bmw.com
 asbc-osb-lapi-exploration.bmw.com
 asbc-osb-lapi-production.bmw.com
-asbc-osb-portal-iam.bmw.com
 asbc-osb-ui-emea-e2e-b2b.bmw.com
 asbc-osb-ui-emea-e2e-dmz.bmw.com
 asbc-osb-ui-emea-e2e.bmw.com
@@ -303,6 +302,7 @@ b2b-mig.bmw.com
 b2b-o.bmw.com
 b2b-pi-int.bmw.com
 b2b-pi.bmw.com
+b2b-prod-wen.bmw.com
 b2b-sra.bmw.com
 b2b-sso-sra.bmw.com
 b2b-sso-wen.bmw.com
@@ -844,6 +844,7 @@ d.m6.bmw.com
 d.m7.bmw.com
 d.m8.bmw.com
 d.m9.bmw.com
+daexin-b2b.bmw.com
 dam-i-interim.bmw.com
 dam-i.bmw.com
 dam-int.bmw.com
@@ -878,7 +879,6 @@ dealerportalsg-uat.bmw.com
 dealersecure.bmw.com
 delivery.bmw.com
 deploydirectori.bmw.com
-dev-fusecard-admin.bmw.com
 dev.approval-bmwgroup-websites.bmw.com
 dev.com.bmw.com
 dev.crm-i.bmw.com
@@ -1077,6 +1077,8 @@ faas20nsf-py5-int.bmw.com
 facts-int.bmw.com
 facts.bmw.com
 factsint.bmw.com
+factstool-int.bmw.com
+factstool-uat.bmw.com
 factstool.bmw.com
 famos-ecap.bmw.com
 famos-int-inter.bmw.com
@@ -1801,6 +1803,7 @@ testbo-china.bmw.com
 tll-i-gf.bmw.com
 tll-i.bmw.com
 tll.bmw.com
+tms-int.bmw.com
 tms-prod.bmw.com
 tms.bmw.com
 tnls-uae.bmw.com
@@ -1942,6 +1945,7 @@ wire-i.bmw.com
 wire-int.bmw.com
 wire-t.bmw.com
 wire.bmw.com
+wit.bmw.com
 wlan.americas@list.bmw.com
 workplace-int.bmw.com
 workplace-int2.bmw.com
