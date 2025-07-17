@@ -32,7 +32,7 @@ jobs:
           matrix=$(jq -R -s -c 'split("\n") | map(select(length > 0))' domains.txt)
           echo "Matrix: $matrix"
           echo "matrix=$matrix" >> $GITHUB_OUTPUT
-  scan:
+  subdomain_scan:
     needs: generate_matrix
     runs-on: ubuntu-latest
     container:
@@ -143,7 +143,7 @@ jobs:
   commit_results:
     name: Commit All Recon Results
     # This job runs after all parallel scan jobs are finished.
-    needs: scan
+    needs: subdomain_scan
     # 'if: always()' ensures we commit results from successful scans even if some scans failed.
     if: always()
     runs-on: ubuntu-latest
@@ -162,10 +162,11 @@ jobs:
           path: temp-results/
 
       - name: Organize and Push to store-recon
+        id: Organize-push
         env:
           STORE_RECON_PAT: ${{ secrets.STORE_RECON_PAT }}
-          STORE_REPO_OWNER: "YourOtherAccountUsername" # IMPORTANT: Change to the owner of store-recon
-          STORE_REPO_NAME: "store-recon"
+          STORE_REPO_OWNER: ${{ secrets.STORE_OWNER }} # IMPORTANT: Change to the owner of store-recon
+          STORE_REPO_NAME: ${{ secrets.STORE_REPO_NAME }}
         run: |
           set -e # Exit immediately if a command fails
 
@@ -245,12 +246,14 @@ jobs:
   
   trigger_puredns:
     name: Trigger PureDNS Workflow
-    needs: scan # This job runs only after the commit job is done
+    needs:  commit_results # This job runs only after the commit job is done
+    
     runs-on: ubuntu-latest
     steps:
       - name: Trigger PureDNS Workflow using repository_dispatch
         env:
           PAT_TOKEN: ${{ secrets.PAT_TOKEN }}
+        id: trigger-puredns  
         run: |
           echo "Triggering the 'Parallel PureDNS Split, Resolve, and Sort' workflow..."
           curl -X POST \
