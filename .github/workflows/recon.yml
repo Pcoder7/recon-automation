@@ -122,7 +122,7 @@ jobs:
         shell: bash
         run: |
           echo "Scanning domain: ${{ matrix.domain }}"
-          oneforall --help
+          #oneforall --help
           interlace \
           -t ${{ matrix.domain }} \
           -threads 3 \
@@ -130,7 +130,7 @@ jobs:
           -o results/${{ matrix.domain }} \
           -v
           # Combine results and deduplicate into combined.txt
-          cat results/${{ matrix.domain }}/subfinder.txt results/${{ matrix.domain }}/assetfinder.txt results/${{ matrix.domain }}/amass.txt | sort -u > results/${{ matrix.domain }}/all_subdomains.txt
+          cat results/${{ matrix.domain }}/subfinder.txt results/${{ matrix.domain }}/assetfinder.txt results/${{ matrix.domain }}/amass.txt | inscope --scope .scope | sort -u > results/${{ matrix.domain }}/all_subdomains.txt
           wc -l results/${{ matrix.domain }}/all_subdomains.txt
        
       - name: Upload all_subdomains.txt for 
