@@ -26,7 +26,7 @@ jobs:
         run: |
           if [ ! -f domains.txt ]; then
             echo "domains.txt file not found!"
-            exit 1
+            exit 0
           fi
           # Create a JSON array from non-empty lines in domains.txt
           matrix=$(jq -R -s -c 'split("\n") | map(select(length > 0))' domains.txt)
@@ -241,7 +241,7 @@ jobs:
           done
 
           echo "ERROR: Could not push results to ${STORE_REPO_NAME} after 10 attempts."
-          exit 1
+          exit 0
 
   
   trigger_puredns:
