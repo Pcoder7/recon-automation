@@ -55,7 +55,7 @@ jobs:
       - name: Setup Go
         uses: actions/setup-go@v5
         with:
-          go-version: '1.22'
+          go-version: '1.23'
 
       - name: Cache Go modules & binaries
         uses: actions/cache@v3
@@ -129,6 +129,7 @@ jobs:
           -cL cli.txt \
           -o results/${{ matrix.domain }} \
           -v
+          
           # Combine results and deduplicate into combined.txt
           cat results/${{ matrix.domain }}/subfinder.txt results/${{ matrix.domain }}/assetfinder.txt results/${{ matrix.domain }}/amass.txt | inscope --scope .scope | sort -u > results/${{ matrix.domain }}/all_subdomains.txt
           wc -l results/${{ matrix.domain }}/all_subdomains.txt
@@ -246,8 +247,8 @@ jobs:
   
   trigger_puredns:
     name: Trigger PureDNS Workflow
-    needs:  commit_results # This job runs only after the commit job is done
-    
+    needs:  commit_results 
+    if: always()
     runs-on: ubuntu-latest
     steps:
       - name: Trigger PureDNS Workflow using repository_dispatch
