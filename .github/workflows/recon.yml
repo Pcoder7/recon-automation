@@ -133,7 +133,7 @@ jobs:
           -threads 6 \
           -cL cli.txt \
           -o results/${{ matrix.domain }} \
-          -v
+          -v 
 
           bbot --help-all
 
