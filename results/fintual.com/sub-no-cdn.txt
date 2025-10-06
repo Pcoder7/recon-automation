@@ -1,2 +1,0 @@
-deeplink.fintual.com:443
-deeplink.fintual.com:80

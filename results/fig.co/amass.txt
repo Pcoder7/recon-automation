@@ -1,6 +1,0 @@
-mg.fig.co
-email.staging-mg.fig.co
-fig.co
-www.fig.co
-blog.fig.co
-email.mg.fig.co
