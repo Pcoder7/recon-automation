@@ -126,7 +126,6 @@ jobs:
           JSONFILE="${OUTDIR}/oneforall.json"
           ONEFORALL_TXT="${OUTDIR}/oneforall.txt"
           echo "Scanning domain: ${{ matrix.domain }}"
-          oneforall --help
           
           interlace \
           -t ${{ matrix.domain }} \
@@ -135,11 +134,10 @@ jobs:
           -o results/${{ matrix.domain }} \
           -v 
 
-          bbot --help-all
+
 
           cat results/${{ matrix.domain }}/oneforall.json | jq -r '.. | objects | .subdomain? // empty' "$TMP_ONEFOR" | sed 's/^\*\.\(.*\)$/\1/'  | sort -u > "$TMP_ONEFOR" || true
           mv -f "$TMP_ONEFOR" "$ONEFORALL_TXT"
-
           
           # Combine results and deduplicate into combined.txt
           cat results/${{ matrix.domain }}/subfinder.txt results/${{ matrix.domain }}/assetfinder.txt results/${{ matrix.domain }}/amass.txt results/${{ matrix.domain }}/chaos.txt results/${{ matrix.domain }}/shrewdeye.txt "$ONEFORALL_TXT" | inscope --scope .scope | sort -u > results/${{ matrix.domain }}/all_subdomains.txt
