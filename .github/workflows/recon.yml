@@ -71,13 +71,20 @@ jobs:
       
       - name: Install Tools
         run: |
+          # Installing Jq
 
+          if ! command -v jq >/dev/null; then
+            echo "Installing jq…"
+            apt install jq
+          else
+            echo "Jq already installed"
+          fi   
           # Installing smap
           if ! command -v smap >/dev/null; then
             echo "Installing smap…"
             go install -v github.com/s0md3v/smap/cmd/smap@latest
           else
-            echo "smap already in cache"
+            echo "smap already installed"
           fi    
 
           # Installing inscope
@@ -85,21 +92,30 @@ jobs:
             echo "Installing inscope…"
             go install -v github.com/tomnomnom/hacks/inscope@latest
           else
-            echo "inscope already in cache"
+            echo "inscope already in installed"
           fi    
+          
+          # Installing Chaos-client
+          if ! command -v chaos >/dev/null; then
+            echo "Installing Chaos…"
+            go install -v github.com/projectdiscovery/chaos-client/cmd/chaos@latest
+          else
+            echo "Chaos already in installed"
+          fi    
+          
           
           if ! command -v anew >/dev/null; then
             echo "Installing anew…"
             go install -v github.com/tomnomnom/anew@latest
           else
-            echo "anew already in cache"
+            echo "anew already in installed"
           fi
 
           if ! command -v shrewdeye >/dev/null; then
             echo "Installing Shrewdeye…"
             go install -v github.com/omkar7505/shrewdeye@latest
           else
-            echo "shrewdeye already in cache"
+            echo "shrewdeye already in installed"
           fi
           
           pip3 install --no-cache-dir ipaddress
@@ -125,6 +141,10 @@ jobs:
           OUTDIR="results/${{ matrix.domain }}"
           JSONFILE="${OUTDIR}/oneforall.json"
           ONEFORALL_TXT="${OUTDIR}/oneforall.txt"
+          
+          BBOT_OUTDIR="results/${{ matrix.domain }}/bbot-output"
+          BBOT_TXT="${OUTDIR}/bbot.txt"
+     
           echo "Scanning domain: ${{ matrix.domain }}"
           
           interlace \
@@ -132,15 +152,38 @@ jobs:
           -threads 6 \
           -cL cli.txt \
           -o results/${{ matrix.domain }} \
-          -v 
-
-
-
+          -v
+          
           cat results/${{ matrix.domain }}/oneforall.json | jq -r '.. | objects | .subdomain? // empty' "$TMP_ONEFOR" | sed 's/^\*\.\(.*\)$/\1/'  | sort -u > "$TMP_ONEFOR" || true
           mv -f "$TMP_ONEFOR" "$ONEFORALL_TXT"
+
+          # --- BBOT: shorter, single-branch logic ---
+          TMP_BBOT="$(mktemp)"
+          nested=$(find "$BBOT_OUTDIR" -mindepth 1 -maxdepth 1 -type d -print -quit 2>/dev/null || true)
+          subfile=""
+          if [[ -n "$nested" ]]; then
+            subfile=$(find "$nested" -type f \( -iname 'subdomains.txt' -o -iname '*subdomains*' -o -iname '*.json' \) -print -quit || true)
+          fi
+
+          if [[ -n "$subfile" ]]; then
+            case "${subfile,,}" in
+              *.json)
+                jq -r '.. | objects | .subdomains? // empty | .[]' "$subfile" 2>/dev/null || true
+                ;;
+              *)
+                sed 's/^\*\.\(.*\)$/\1/' "$subfile"
+                ;;
+            esac | sed '/^$/d' | sort -u > "$TMP_BBOT"
+          else
+            : > "$TMP_BBOT"
+          fi
+
+          mv -f "$TMP_BBOT" "$BBOT_TXT"
+          chmod 644 "$BBOT_TXT"
           
+          wc -l "$BBOT_TXT"
           # Combine results and deduplicate into combined.txt
-          cat results/${{ matrix.domain }}/subfinder.txt results/${{ matrix.domain }}/assetfinder.txt results/${{ matrix.domain }}/amass.txt results/${{ matrix.domain }}/chaos.txt results/${{ matrix.domain }}/shrewdeye.txt "$ONEFORALL_TXT" | inscope --scope .scope | sort -u > results/${{ matrix.domain }}/all_subdomains.txt
+          cat results/${{ matrix.domain }}/subfinder.txt results/${{ matrix.domain }}/assetfinder.txt results/${{ matrix.domain }}/amass.txt results/${{ matrix.domain }}/chaos.txt results/${{ matrix.domain }}/shrewdeye.txt "$ONEFORALL_TXT" "$BBOT_TXT" | inscope --scope .scope | sort -u > results/${{ matrix.domain }}/all_subdomains.txt
           wc -l results/${{ matrix.domain }}/all_subdomains.txt
        
       - name: Upload all_subdomains.txt for 
