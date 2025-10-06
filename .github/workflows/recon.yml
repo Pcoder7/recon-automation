@@ -12,6 +12,8 @@ jobs:
   generate_matrix:
     runs-on: ubuntu-latest
 
+    env:
+      PDCP_KEY: ${{ secrets.PDCP_API_KEY }}
     outputs:
       matrix: ${{ steps.set_matrix.outputs.matrix }}
     steps:
@@ -187,8 +189,7 @@ jobs:
           wc -l "$BBOT_TXT"
 
           # GithubBugBountyData
-          
-          
+          echo "===== Starting Github BugBountyData Repository Data ==========="
           REMOTE_URL="https://raw.githubusercontent.com/rix4uni/BugBountyData/refs/heads/main/data/${{ matrix.domain }}.txt"
           if curl -fsSL "$REMOTE_URL" -o "$EXTERNAL_TX"; then
             sed -E 's#^https?://##I; s/^[*.]+//; s/[.]+$//; s/^[[:space:]]+//; s/[[:space:]]+$//' | grep -E '^[a-z0-9]([a-z0-9-]*\.)+[a-z]{2,}$' --color=never | sort -u > "$EXTERNAL_FINAL" || true
