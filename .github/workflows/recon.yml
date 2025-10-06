@@ -296,23 +296,3 @@ jobs:
           echo "ERROR: Could not push results to ${STORE_REPO_NAME} after 10 attempts."
           exit 0
 
-  
-  trigger_puredns:
-    name: Trigger PureDNS Workflow
-    needs:  commit_results 
-    if: always()
-    runs-on: ubuntu-latest
-    steps:
-      - name: Trigger PureDNS Workflow using repository_dispatch
-        env:
-          PAT_TOKEN: ${{ secrets.PAT_TOKEN }}
-        id: trigger-puredns  
-        run: |
-          echo "Triggering the 'Parallel PureDNS Split, Resolve, and Sort' workflow..."
-          curl -X POST \
-            -H "Accept: application/vnd.github.v3+json" \
-            -H "Authorization: token ${PAT_TOKEN}" \
-            https://api.github.com/repos/Pcoder7/puredns-res/dispatches \
-            -d '{"event_type": "trigger_puredns", "client_payload": {"results_repo": "${{ github.repository }}", "results_dir": "results", "run_id": ${{ github.run_id }} }}'
-
-          
