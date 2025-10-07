@@ -149,6 +149,7 @@ jobs:
 
           EXTERNAL_TX="$(mktemp)"
           EXTERNAL_FINAL="${OUTDIR}/external.txt"
+          TARGET="${OUTDIR}/all_subdomains.txt"
      
           echo "Scanning domain: ${{ matrix.domain }}"
           
