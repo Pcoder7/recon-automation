@@ -209,17 +209,9 @@ jobs:
             "${OUTDIR}/shrewdeye.txt" \
             "$ONEFORALL_TXT" \
             "$BBOT_TXT" \
-            "$EXTERNAL_FINAL" \
-          | sed -E '
-              s#^https?://##I;
-              s/^[*.]+//;
-              s/[.]+$//;
-              s/^[[:space:]]+//;
-              s/[[:space:]]+$//
-            ' | grep -E '^[a-z0-9]([a-z0-9-]*\.)+[a-z]{2,}$' --color=never || true \
-          | inscope --scope .scope \
-          | sort -u > "$TARGET"    
+            "$EXTERNAL_FINAL" | sed -E 's#^https?://##I; s/^[*.]+//; s/[.]+$//; s/^[[:space:]]+//; s/[[:space:]]+$//' | grep -E '^[a-z0-9]([a-z0-9-]*\.)+[a-z]{2,}$' --color=never | inscope --scope .scope | sort -u > "$TARGET" || true  
 
+                   
           # Count all Subdomains
           wc -l results/${{ matrix.domain }}/all_subdomains.txt
        
