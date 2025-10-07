@@ -159,6 +159,8 @@ jobs:
           -cL cli.txt \
           -o results/${{ matrix.domain }} \
           -v
+
+          chaos -duc -d gobugfree.com -silent -key ${PDCP_KEY} -o "results/${{ matrix.domain }}/chaos.txt"
           
           cat results/${{ matrix.domain }}/oneforall.json | jq -r '.. | objects | .subdomain? // empty' "$TMP_ONEFOR" | sed -E 's#^https?://##I; s/^[*.]+//; s/[.]+$//; s/^[[:space:]]+//; s/[[:space:]]+$//' |  grep -E '^[a-z0-9]([a-z0-9-]*\.)+[a-z]{2,}$' --color=never | sort -u > "$TMP_ONEFOR" || true
           mv -f "$TMP_ONEFOR" "$ONEFORALL_TXT"
@@ -198,7 +200,8 @@ jobs:
             : > "$EXTERNAL_FINAL"
           fi
           rm -f "$EXTERNAL_TX"
-          
+
+          wc -l "$EXTERNAL_FINAL"
           # Combine results and deduplicate into combined.txt
           
           cat \
