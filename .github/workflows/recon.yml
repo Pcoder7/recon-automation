@@ -155,7 +155,7 @@ jobs:
           
           interlace \
           -t ${{ matrix.domain }} \
-          -threads 8 \
+          -threads 7 \
           -cL cli.txt \
           -o results/${{ matrix.domain }} \
           -v
@@ -164,6 +164,8 @@ jobs:
           
           cat results/${{ matrix.domain }}/oneforall.json | jq -r '.. | objects | .subdomain? // empty' "$TMP_ONEFOR" | sed -E 's#^https?://##I; s/^[*.]+//; s/[.]+$//; s/^[[:space:]]+//; s/[[:space:]]+$//' |  grep -E '^[a-z0-9]([a-z0-9-]*\.)+[a-z]{2,}$' --color=never | sort -u > "$TMP_ONEFOR" || true
           mv -f "$TMP_ONEFOR" "$ONEFORALL_TXT"
+          chmod 644 "$ONEFORALL_TXT"
+          wc -l "$ONEFORALL_TXT"
 
           # --- BBOT: shorter, single-branch logic ---
           TMP_BBOT="$(mktemp)"
