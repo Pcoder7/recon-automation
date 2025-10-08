@@ -183,7 +183,7 @@ jobs:
           # --- BBOT extraction (short logic, prefer subdomains.txt then JSON) ---
 
           TMP_BBOT="$(mktemp)"
-
+          mkdir -p "$BBOT_OUTDIR"
           # wait for nested dir (30s max)
           nested=""
           for _ in {1..30}; do
