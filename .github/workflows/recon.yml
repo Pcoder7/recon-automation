@@ -163,7 +163,7 @@ jobs:
 
           assetfinder -subs-only ${{ matrix.domain }} | anew -q "$OUTDIR/assetfinder.txt"  
 
-          chaos -d "${{ matrix.domain }}" -o "$OUTDIR/chaos.txt" -key "${PDCP_KEY}" -silent
+          chaos -d "${{ matrix.domain }}" -o "$OUTDIR/chaos.txt" -key "${PDCP_KEY}" -silent || true
 
          
           
