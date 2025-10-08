@@ -207,6 +207,8 @@ jobs:
           chmod 644 "$BBOT_TXT"
           echo "bbot lines: $(wc -l < "$BBOT_TXT")"
 
+          ls -ld "$BBOT_OUTDIR" || true; nested=$(find "$BBOT_OUTDIR" -mindepth 1 -maxdepth 1 -type d -print -quit || true); echo "nested=$nested"; if [[ -n "$nested" ]]; then echo "files:"; find "$nested" -type f -print -exec sh -c 'echo "---- {} ----"; head -n 20 "{}"; echo' \;; fi
+
           # --- External: download and normalize (fixed sed input) ---
           mkdir -p "$OUTDIR"
           REMOTE_URL="https://raw.githubusercontent.com/rix4uni/BugBountyData/refs/heads/main/data/${{ matrix.domain }}.txt"
