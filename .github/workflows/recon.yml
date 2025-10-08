@@ -160,7 +160,7 @@ jobs:
             -o "$OUTDIR" \
             -v
 
-          chaos -d "${{ matrix.domain }}" -o "$OUTDIR/chaos.txt" -key ${PDCP_KEY} -silent
+          chaos -d "${{ matrix.domain }}" -o "$OUTDIR/chaos.txt" -key "${PDCP_KEY}" -silent
           
           # --- oneforall: extract subdomain entries (fixed jq usage) ---
           if [[ -s "$JSONFILE" ]]; then
