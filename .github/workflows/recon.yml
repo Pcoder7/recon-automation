@@ -143,81 +143,101 @@ jobs:
           OUTDIR="results/${{ matrix.domain }}"
           JSONFILE="${OUTDIR}/oneforall.json"
           ONEFORALL_TXT="${OUTDIR}/oneforall.txt"
-          
+
           BBOT_OUTDIR="results/${{ matrix.domain }}/bbot-output"
           BBOT_TXT="${OUTDIR}/bbot.txt"
-
           EXTERNAL_TX="$(mktemp)"
           EXTERNAL_FINAL="${OUTDIR}/external.txt"
           TARGET="${OUTDIR}/all_subdomains.txt"
-     
-          echo "Scanning domain: ${{ matrix.domain }}"
-          
-          interlace \
-          -t ${{ matrix.domain }} \
-          -threads 7 \
-          -cL cli.txt \
-          -o results/${{ matrix.domain }} \
-          -v
 
-          chaos -duc -d "${{ matrix.domain }}" -silent -key ${PDCP_KEY} -o "results/${{ matrix.domain }}/chaos.txt"
-          
-          cat results/${{ matrix.domain }}/oneforall.json | jq -r '.. | objects | .subdomain? // empty' "$TMP_ONEFOR" | sed -E 's#^https?://##I; s/^[*.]+//; s/[.]+$//; s/^[[:space:]]+//; s/[[:space:]]+$//' |  grep -E '^[a-z0-9]([a-z0-9-]*\.)+[a-z]{2,}$' --color=never | sort -u > "$TMP_ONEFOR" || true
+          echo "Scanning domain: ${{ matrix.domain }}"
+
+          # run interlace (cli.txt drives the tools)
+          interlace \
+            -t ${{ matrix.domain }} \
+            -threads 7 \
+            -cL cli.txt \
+            -o "$OUTDIR" \
+            -v
+
+          # --- oneforall: extract subdomain entries (fixed jq usage) ---
+          if [[ -s "$JSONFILE" ]]; then
+            jq -r '.. | objects | .subdomain? // empty' "$JSONFILE" \
+              | sed -E 's#^https?://##I; s/^[*.]+//; s/[.]+$//; s/^[[:space:]]+//; s/[[:space:]]+$//' \
+              | grep -E '^[a-z0-9]([a-z0-9-]*\.)+[a-z]{2,}$' --color=never \
+              | sort -u > "$TMP_ONEFOR" || true
+          else
+            : > "$TMP_ONEFOR"
+          fi
           mv -f "$TMP_ONEFOR" "$ONEFORALL_TXT"
           chmod 644 "$ONEFORALL_TXT"
-          wc -l "$ONEFORALL_TXT"
+          echo "oneforall lines: $(wc -l < "$ONEFORALL_TXT")"
 
-          # --- BBOT: shorter, single-branch logic ---
+          # --- BBOT extraction (short logic, prefer subdomains.txt then JSON) ---
           TMP_BBOT="$(mktemp)"
           nested=$(find "$BBOT_OUTDIR" -mindepth 1 -maxdepth 1 -type d -print -quit 2>/dev/null || true)
-          subfile=""
           if [[ -n "$nested" ]]; then
             subfile=$(find "$nested" -type f \( -iname 'subdomains.txt' -o -iname '*subdomains*' -o -iname '*.json' \) -print -quit || true)
+          else
+            subfile=""
           fi
 
           if [[ -n "$subfile" ]]; then
-            case "${subfile,,}" in
-              *.json)
-                jq -r '.. | objects | .subdomains? // empty | .[]' "$subfile" 2>/dev/null || true
-                ;;
-              *)
-                sed -E 's#^https?://##I; s/^[*.]+//; s/[.]+$//; s/^[[:space:]]+//; s/[[:space:]]+$//'  "$subfile"
-                ;;
-            esac | grep -E '^[a-z0-9]([a-z0-9-]*\.)+[a-z]{2,}$' --color=never | sort -u > "$TMP_BBOT" || true
+            if [[ "${subfile,,}" == *.json ]]; then
+              jq -r '.. | objects | .subdomains? // empty | .[]' "$subfile" 2>/dev/null || true
+            else
+              sed -E 's#^https?://##I; s/^[*.]+//; s/[.]+$//; s/^[[:space:]]+//; s/[[:space:]]+$//' "$subfile"
+            fi | grep -E '^[a-z0-9]([a-z0-9-]*\.)+[a-z]{2,}$' --color=never | sort -u > "$TMP_BBOT" || true
           else
             : > "$TMP_BBOT"
           fi
 
           mv -f "$TMP_BBOT" "$BBOT_TXT"
           chmod 644 "$BBOT_TXT"
-          
-          wc -l "$BBOT_TXT"
+          echo "bbot lines: $(wc -l < "$BBOT_TXT")"
 
-          # GithubBugBountyData
-          echo "===== Starting Github BugBountyData Repository Data ==========="
+          # --- External: download and normalize (fixed sed input) ---
+          mkdir -p "$OUTDIR"
           REMOTE_URL="https://raw.githubusercontent.com/rix4uni/BugBountyData/refs/heads/main/data/${{ matrix.domain }}.txt"
           if curl -fsSL "$REMOTE_URL" -o "$EXTERNAL_TX"; then
-            sed -E 's#^https?://##I; s/^[*.]+//; s/[.]+$//; s/^[[:space:]]+//; s/[[:space:]]+$//' | grep -E '^[a-z0-9]([a-z0-9-]*\.)+[a-z]{2,}$' --color=never | sort -u > "$EXTERNAL_FINAL" || true
+            sed -E 's#^https?://##I; s/^[*.]+//; s/[.]+$//; s/^[[:space:]]+//; s/[[:space:]]+$//' "$EXTERNAL_TX" \
+              | tr '[:upper:]' '[:lower:]' \
+              | grep -E '^[a-z0-9]([a-z0-9-]*\.)+[a-z]{2,}$' --color=never \
+              | sort -u > "$EXTERNAL_FINAL" || true
           else
             : > "$EXTERNAL_FINAL"
           fi
           rm -f "$EXTERNAL_TX"
+          echo "external lines: $(wc -l < "$EXTERNAL_FINAL")"
 
-          wc -l "$EXTERNAL_FINAL"
-          # Combine results and deduplicate into combined.txt
-          
-          cat \
-            "${OUTDIR}/subfinder.txt" \
-            "${OUTDIR}/assetfinder.txt" \
-            "${OUTDIR}/amass.txt" \
-            "${OUTDIR}/chaos.txt" \
-            "${OUTDIR}/shrewdeye.txt" \
-            "$ONEFORALL_TXT" \
-            "$BBOT_TXT" \
-            "$EXTERNAL_FINAL" | sed -E 's#^https?://##I; s/^[*.]+//; s/[.]+$//; s/^[[:space:]]+//; s/[[:space:]]+$//' | grep -E '^[a-z0-9]([a-z0-9-]*\.)+[a-z]{2,}$' --color=never | inscope --scope .scope | sort -u > "$TARGET" || true  
+          # --- Combine: only cat files that exist to avoid errors ---
+          FILES=(
+            "$OUTDIR/subfinder.txt"
+            "$OUTDIR/assetfinder.txt"
+            "$OUTDIR/amass.txt"
+            "$OUTDIR/shrewdeye.txt"
+            "$ONEFORALL_TXT"
+            "$BBOT_TXT"
+            "$EXTERNAL_FINAL"
+          )
+
+          # create a temp aggregate file then move atomically
+          TMP_ALL="$(mktemp)"
+          for f in "${FILES[@]}"; do
+            if [[ -f "$f" && -s "$f" ]]; then
+              sed -E 's#^https?://##I; s/^[*.]+//; s/[.]+$//; s/^[[:space:]]+//; s/[[:space:]]+$//' "$f"
+            fi
+          done \
+            | grep -E '^[a-z0-9]([a-z0-9-]*\.)+[a-z]{2,}$' --color=never \
+            | inscope --scope .scope \
+            | sort -u > "$TMP_ALL" || true
+
+          mv -f "$TMP_ALL" "$TARGET"
+          chmod 644 "$TARGET"
+          echo "all_subdomains lines: $(wc -l < "$TARGET")"
     
           # Count all Subdomains
-          wc -l results/${{ matrix.domain }}/all_subdomains.txt
+
        
       - name: Upload all_subdomains.txt for 
         uses: actions/upload-artifact@v4
