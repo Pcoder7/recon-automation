@@ -8,12 +8,12 @@ on:
 permissions:
   contents: write
 
+env:
+  PDCP_KEY: ${{ secrets.PDCP_API_KEY }}  
+
 jobs:
   generate_matrix:
     runs-on: ubuntu-latest
-
-    env:
-      PDCP_KEY: ${{ secrets.PDCP_API_KEY }}
     outputs:
       matrix: ${{ steps.set_matrix.outputs.matrix }}
     steps:
@@ -34,6 +34,7 @@ jobs:
           matrix=$(jq -R -s -c 'split("\n") | map(select(length > 0))' domains.txt)
           echo "Matrix: $matrix"
           echo "matrix=$matrix" >> $GITHUB_OUTPUT
+          
   subdomain_scan:
     needs: generate_matrix
     runs-on: ubuntu-latest
@@ -160,7 +161,11 @@ jobs:
             -o "$OUTDIR" \
             -v
 
+          assetfinder -subs-only ${{ matrix.domain }} | anew -q "$OUTDIR/assetfinder.txt"  
+
           chaos -d "${{ matrix.domain }}" -o "$OUTDIR/chaos.txt" -key "${PDCP_KEY}" -silent
+
+         
           
           # --- oneforall: extract subdomain entries (fixed jq usage) ---
           if [[ -s "$JSONFILE" ]]; then
