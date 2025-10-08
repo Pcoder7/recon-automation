@@ -163,6 +163,14 @@ jobs:
 
           assetfinder -subs-only ${{ matrix.domain }} | anew -q "$OUTDIR/assetfinder.txt"  
 
+          echo "Debug: check PDCP_KEY is present (length only)"
+          if [ -z "${PDCP_KEY:-}" ]; then
+            echo "PDCP_KEY is MISSING in this environment"
+          else
+            # print length only (safe)
+            echo "PDCP_KEY present, length=$(printf '%s' "$PDCP_KEY" | wc -c)"
+          fi
+
           chaos -d "${{ matrix.domain }}" -o "$OUTDIR/chaos.txt" -key "${PDCP_KEY}" -silent || true
 
          
