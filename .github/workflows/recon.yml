@@ -160,6 +160,8 @@ jobs:
             -o "$OUTDIR" \
             -v
 
+          chaos -d "${{ matrix.domain }}" -o "$OUTDIR/chaos.txt" -key $PDCP_KEY -silent
+          
           # --- oneforall: extract subdomain entries (fixed jq usage) ---
           if [[ -s "$JSONFILE" ]]; then
             jq -r '.. | objects | .subdomain? // empty' "$JSONFILE" \
@@ -174,20 +176,38 @@ jobs:
           echo "oneforall lines: $(wc -l < "$ONEFORALL_TXT")"
 
           # --- BBOT extraction (short logic, prefer subdomains.txt then JSON) ---
+
           TMP_BBOT="$(mktemp)"
           nested=$(find "$BBOT_OUTDIR" -mindepth 1 -maxdepth 1 -type d -print -quit 2>/dev/null || true)
+
           if [[ -n "$nested" ]]; then
-            subfile=$(find "$nested" -type f \( -iname 'subdomains.txt' -o -iname '*subdomains*' -o -iname '*.json' \) -print -quit || true)
+            # find first file that looks relevant (prefer json, then plain subdomains)
+            subfile=$(find "$nested" -type f \( -iname '*.json' -o -iname 'subdomains.txt' -o -iname '*subdomains*' \) -print -quit || true)
           else
             subfile=""
           fi
 
           if [[ -n "$subfile" ]]; then
             if [[ "${subfile,,}" == *.json ]]; then
-              jq -r '.. | objects | .subdomains? // empty | .[]' "$subfile" 2>/dev/null || true
+              # try multiple jq patterns (in order). Output lines to stdout.
+              jq -r '
+                ( .subdomains[]? ) //            # onecommon shape
+                ( .. | objects | .subdomains? | .[]? ) // 
+                ( .[]? | select(.type=="DNS_NAME") | .data )   # BBOT DNS_NAME -> .data
+              ' "$subfile" 2>/dev/null \
+              || jq -r '.. | objects | select(.type=="DNS_NAME") | .data' "$subfile" 2>/dev/null \
+              || true \
+              | sed -E 's#^https?://##I; s/^[*.]+//; s/^[.]+//; s/[.]+$//; s/^[[:space:]]+//; s/[[:space:]]+$//' \
+              | tr '[:upper:]' '[:lower:]' \
+              | grep -E '^[a-z0-9]([a-z0-9-]*\.)+[a-z]{2,}$' --color=never \
+              | sort -u > "$TMP_BBOT" || true
             else
-              sed -E 's#^https?://##I; s/^[*.]+//; s/[.]+$//; s/^[[:space:]]+//; s/[[:space:]]+$//' "$subfile"
-            fi | grep -E '^[a-z0-9]([a-z0-9-]*\.)+[a-z]{2,}$' --color=never | sort -u > "$TMP_BBOT" || true
+              # plain text subdomains file
+              sed -E 's#^https?://##I; s/^[*.]+//; s/^[.]+//; s/[.]+$//; s/^[[:space:]]+//; s/[[:space:]]+$//' "$subfile" \
+                | tr '[:upper:]' '[:lower:]' \
+                | grep -E '^[a-z0-9]([a-z0-9-]*\.)+[a-z]{2,}$' --color=never \
+                | sort -u > "$TMP_BBOT" || true
+            fi
           else
             : > "$TMP_BBOT"
           fi
@@ -218,6 +238,7 @@ jobs:
             "$OUTDIR/shrewdeye.txt"
             "$ONEFORALL_TXT"
             "$BBOT_TXT"
+            "$OUTDIR/chaos.txt"
             "$EXTERNAL_FINAL"
           )
 
