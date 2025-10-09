@@ -206,15 +206,13 @@ jobs:
           done
 
           # safe regex usage: store pattern in a variable and use grep -E -- "$PATTERN"
-          PATTERN='^[a-z0-9][a-z0-9.-]*\.[a-z][a-z]+$'
+          
 
           # example: normalize and validate an input file -> normalized.tmp
           IN_FILE="$FOUND"   
 
           if [[ -n "$IN_FILE" && -f "$IN_FILE" ]]; then
             sed -E 's#^https?://##I; s/^[*.]+//; s/^[.]+//; s/[.]+$//; s/^[[:space:]]+//; s/[[:space:]]+$//' "$IN_FILE" \
-              | tr '[:upper:]' '[:lower:]' \
-              | LC_ALL=C grep -E -- "$PATTERN" \
               | sort -u > "$TMP_BBOT"
           else
             : > "$TMP_BBOT"
