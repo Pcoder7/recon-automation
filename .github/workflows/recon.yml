@@ -196,11 +196,33 @@ jobs:
           echo "bbot run logs (err head):"
           head -c 400 "$OUTDIR/bbot.run.err" 2>/dev/null || true
 
+          echo "=== BBOT captured logs (first 200 bytes stderr/stdout) ==="
+          head -c 200 "results/${{ matrix.domain }}/bbot.run.err" 2>/dev/null || echo "(no bbot.run.err)"
+          head -c 200 "results/${{ matrix.domain }}/bbot.run.log" 2>/dev/null || echo "(no bbot.run.log)"
+
+          echo "=== OUTDIR listing (top 3 levels): ==="
+          find "results/${{ matrix.domain }}" -maxdepth 3 -type d -print -exec ls -la {} \; 2>/dev/null | sed -n "1,200p" || true
+
+          echo "=== Any subdomains.* files (case-ins) and their sizes: ==="
+          find "results/${{ matrix.domain }}" -type f \( -iname "subdomains.txt" -o -iname "*subdomains*" -o -iname "*subdomain*" \) -printf "%p %s\n" -quit 2>/dev/null || true
+
+          echo "=== Grep domain-like tokens from any file under OUTDIR (first 40 matches) ==="
+          grep -Eoi "([a-z0-9-]+\.)+[a-z]{2,}" "results/${{ matrix.domain }}" -R --no-messages | sed -n "1,40p" || echo "(no domain-like tokens found)" 
+
+          echo "=== Show any JSON files under OUTDIR (first file sample) ==="
+          j=$(find "results/${{ matrix.domain }}" -type f -iname "*.json" -print -quit || true)
+          if [[ -n "$j" ]]; then
+            echo "example json: $j"
+            head -n 50 "$j" | sed -n "1,200p"
+          else
+            echo "no json files found under results/${{ matrix.domain }}"
+          fi
+
           # --- Wait & locate subdomains.txt anywhere under OUTDIR (120s max) ---
           TMP_BBOT="$(mktemp)"
           FOUND=""
           for i in $(seq 1 120); do
-            FOUND=$(find "$BBOT_OUTDIR" -type f -iname 'subdomains.txt' -print -quit 2>/dev/null || true)
+            FOUND=$(find "$BBOT_OUTDIR" -type f -iname "subdomains.txt" -print -quit 2>/dev/null || true)
             if [[ -n "$FOUND" ]]; then break; fi
             sleep 1
           done
