@@ -205,13 +205,18 @@ jobs:
             sleep 1
           done
 
-          if [[ -n "$FOUND" ]]; then
-            sed -E 's#^https?://##I; s/^[*.]+//; s/^[.]+//; s/[.]+$//; s/^[[:space:]]+//; s/[[:space:]]+$//' "$FOUND" \
+          # safe regex usage: store pattern in a variable and use grep -E -- "$PATTERN"
+          PATTERN='^[a-z0-9]([a-z0-9-]*\.)+[a-z]{2,}$'
+
+          # example: normalize and validate an input file -> normalized.tmp
+          IN_FILE="$FOUND"   
+
+          if [[ -n "$IN_FILE" && -f "$IN_FILE" ]]; then
+            sed -E 's#^https?://##I; s/^[*.]+//; s/^[.]+//; s/[.]+$//; s/^[[:space:]]+//; s/[[:space:]]+$//' "$IN_FILE" \
               | tr '[:upper:]' '[:lower:]' \
-              | grep -E '^[a-z0-9]([a-z0-9-]*\.)+[a-z]{2,}$' --color=never \
+              | LC_ALL=C grep -E -- "$PATTERN" \
               | sort -u > "$TMP_BBOT"
           else
-            # no subdomains.txt found
             : > "$TMP_BBOT"
           fi
 
