@@ -215,9 +215,9 @@ jobs:
             : > "$TMP_BBOT"
           fi
 
-          mv -f "$TMP_BBOT" "$BBOT_TX"
-          chmod 644 "$BBOT_TX"
-          echo "bbot lines: $(wc -l < "$BBOT_TX")"
+          mv -f "$TMP_BBOT" "$BBOT_TXT"
+          chmod 644 "$BBOT_TXT"
+          echo "bbot lines: $(wc -l < "$BBOT_TXT")"
 
           # --- External: download and normalize (fixed sed input) ---
           mkdir -p "$OUTDIR"
@@ -238,7 +238,7 @@ jobs:
             "$OUTDIR/amass.txt"
             "$OUTDIR/shrewdeye.txt"
             "$ONEFORALL_TXT"
-            "$BBOT_TX"
+            "$BBOT_TXT"
             "$OUTDIR/chaos.txt"
             "$EXTERNAL_FINAL"
           )
