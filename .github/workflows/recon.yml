@@ -201,7 +201,7 @@ jobs:
           head -c 200 "results/${{ matrix.domain }}/bbot.run.log" 2>/dev/null || echo "(no bbot.run.log)"
 
           echo "=== OUTDIR listing (top 3 levels): ==="
-          find "results/${{ matrix.domain }}" -maxdepth 3 -type d -print -exec ls -la {} \; 2>/dev/null | sed -n "1,200p" || true
+          find "results/${{ matrix.domain }}" -maxdepth 3 -type d -print -exec ls -la {} \; 2>/dev/null || true
 
           echo "=== Any subdomains.* files (case-ins) and their sizes: ==="
           find "results/${{ matrix.domain }}" -type f \( -iname "subdomains.txt" -o -iname "*subdomains*" -o -iname "*subdomain*" \) -printf "%p %s\n" -quit 2>/dev/null || true
