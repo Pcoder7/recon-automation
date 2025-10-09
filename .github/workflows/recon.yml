@@ -239,7 +239,7 @@ jobs:
           # --- Combine: only cat files that exist to avoid errors ---
           FILES=(
            # "$OUTDIR/subfinder.txt"
-           # "$OUTDIR/assetfinder.txt"
+             "$OUTDIR/assetfinder.txt"
            # "$OUTDIR/amass.txt"
             "$OUTDIR/shrewdeye.txt"
            # "$ONEFORALL_TXT"
