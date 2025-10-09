@@ -156,12 +156,12 @@ jobs:
           # run interlace (cli.txt drives the tools)
           interlace \
             -t ${{ matrix.domain }} \
-            -threads 7 \
+            -threads 6 \
             -cL cli.txt \
             -o "$OUTDIR" \
             -v
 
-          assetfinder -subs-only ${{ matrix.domain }} | anew -q "$OUTDIR/assetfinder.txt"  
+          assetfinder -subs-only ${{ matrix.domain }} | sed -E 's#^https?://##I; s/^[*.]+//; s/[.]+$//; s/^[[:space:]]+//; s/[[:space:]]+$//' |  grep -E '^[a-z0-9]([a-z0-9-]*\.)+[a-z]{2,}$' --color=never | inscope --scope .scope | anew -q "$OUTDIR/assetfinder.txt" || true
 
           echo "Debug: check PDCP_KEY is present (length only)"
           if [ -z "${PDCP_KEY:-}" ]; then
@@ -172,7 +172,6 @@ jobs:
           fi
 
           chaos -d "${{ matrix.domain }}" -o "$OUTDIR/chaos.txt" -key "${PDCP_KEY}" -silent || true
-
          
           
           # --- oneforall: extract subdomain entries (fixed jq usage) ---
@@ -238,11 +237,11 @@ jobs:
 
           # --- Combine: only cat files that exist to avoid errors ---
           FILES=(
-           # "$OUTDIR/subfinder.txt"
-             "$OUTDIR/assetfinder.txt"
-           # "$OUTDIR/amass.txt"
+            "$OUTDIR/subfinder.txt"
+            "$OUTDIR/assetfinder.txt"
+            "$OUTDIR/amass.txt"
             "$OUTDIR/shrewdeye.txt"
-           # "$ONEFORALL_TXT"
+            "$ONEFORALL_TXT"
             "$BBOT_TXT"
             "$OUTDIR/chaos.txt"
             "$EXTERNAL_FINAL"
