@@ -161,7 +161,7 @@ jobs:
             -o "$OUTDIR" \
             -v
 
-          assetfinder -subs-only ${{ matrix.domain }} | sed -E 's#^https?://##I; s/^[*.]+//; s/[.]+$//; s/^[[:space:]]+//; s/[[:space:]]+$//' |  grep -E '^[a-z0-9]([a-z0-9-]*\.)+[a-z]{2,}$' --color=never | inscope --scope .scope | anew -q "$OUTDIR/assetfinder.txt" || true
+          assetfinder -subs-only ${{ matrix.domain }} | sed -E "s#^https?://##I; s/^[*.]+//; s/[.]+$//; s/^[[:space:]]+//; s/[[:space:]]+$//" |  grep -E '^[a-z0-9]([a-z0-9-]*\.)+[a-z]{2,}$' --color=never | inscope --scope .scope | anew -q "$OUTDIR/assetfinder.txt" || true
 
           echo "Debug: check PDCP_KEY is present (length only)"
           if [ -z "${PDCP_KEY:-}" ]; then
@@ -177,7 +177,7 @@ jobs:
           # --- oneforall: extract subdomain entries (fixed jq usage) ---
           if [[ -s "$JSONFILE" ]]; then
             jq -r '.. | objects | .subdomain? // empty' "$JSONFILE" \
-              | sed -E 's#^https?://##I; s/^[*.]+//; s/[.]+$//; s/^[[:space:]]+//; s/[[:space:]]+$//' \
+              | sed -E "s#^https?://##I; s/^[*.]+//; s/[.]+$//; s/^[[:space:]]+//; s/[[:space:]]+$//" \
               | grep -E '^[a-z0-9]([a-z0-9-]*\.)+[a-z]{2,}$' --color=never \
               | sort -u > "$TMP_ONEFOR" || true
           else
@@ -212,7 +212,7 @@ jobs:
           IN_FILE="$FOUND"   
 
           if [[ -n "$IN_FILE" && -f "$IN_FILE" ]]; then
-            sed -E 's#^https?://##I; s/^[*.]+//; s/^[.]+//; s/[.]+$//; s/^[[:space:]]+//; s/[[:space:]]+$//' "$IN_FILE" \
+            sed -E "s#^https?://##I; s/^[*.]+//; s/^[.]+//; s/[.]+$//; s/^[[:space:]]+//; s/[[:space:]]+$//" "$IN_FILE" \
               | sort -u > "$TMP_BBOT"
           else
             : > "$TMP_BBOT"
@@ -228,7 +228,7 @@ jobs:
           mkdir -p "$OUTDIR"
           REMOTE_URL="https://raw.githubusercontent.com/rix4uni/BugBountyData/refs/heads/main/data/${{ matrix.domain }}.txt"
           if curl -fsSL "$REMOTE_URL" -o "$EXTERNAL_TX"; then
-            sed -E 's#^https?://##I; s/^[*.]+//; s/[.]+$//; s/^[[:space:]]+//; s/[[:space:]]+$//' "$EXTERNAL_TX" \
+            sed -E "s#^https?://##I; s/^[*.]+//; s/[.]+$//; s/^[[:space:]]+//; s/[[:space:]]+$//" "$EXTERNAL_TX" \
               | sort -u > "$EXTERNAL_FINAL" || true
           else
             : > "$EXTERNAL_FINAL"
@@ -252,7 +252,7 @@ jobs:
           TMP_ALL="$(mktemp)"
           for f in "${FILES[@]}"; do
             if [[ -f "$f" && -s "$f" ]]; then
-              sed -E 's#^https?://##I; s/^[*.]+//; s/[.]+$//; s/^[[:space:]]+//; s/[[:space:]]+$//' "$f"
+              sed -E "s#^https?://##I; s/^[*.]+//; s/[.]+$//; s/^[[:space:]]+//; s/[[:space:]]+$//" "$f"
             fi
           done \
             | inscope --scope .scope \
