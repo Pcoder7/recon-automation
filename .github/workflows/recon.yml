@@ -229,8 +229,6 @@ jobs:
           REMOTE_URL="https://raw.githubusercontent.com/rix4uni/BugBountyData/refs/heads/main/data/${{ matrix.domain }}.txt"
           if curl -fsSL "$REMOTE_URL" -o "$EXTERNAL_TX"; then
             sed -E 's#^https?://##I; s/^[*.]+//; s/[.]+$//; s/^[[:space:]]+//; s/[[:space:]]+$//' "$EXTERNAL_TX" \
-              | tr '[:upper:]' '[:lower:]' \
-              | grep -E '^[a-z0-9]([a-z0-9-]*\.)+[a-z]{2,}$' --color=never \
               | sort -u > "$EXTERNAL_FINAL" || true
           else
             : > "$EXTERNAL_FINAL"
@@ -257,7 +255,6 @@ jobs:
               sed -E 's#^https?://##I; s/^[*.]+//; s/[.]+$//; s/^[[:space:]]+//; s/[[:space:]]+$//' "$f"
             fi
           done \
-            | grep -E '^[a-z0-9]([a-z0-9-]*\.)+[a-z]{2,}$' --color=never \
             | inscope --scope .scope \
             | sort -u > "$TMP_ALL" || true
 
