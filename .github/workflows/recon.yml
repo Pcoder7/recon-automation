@@ -189,35 +189,35 @@ jobs:
 
           # --- BBOT extraction (short logic, prefer subdomains.txt then JSON) ---
 
+          echo "Running bbot directly (output -> $OUTDIR/bbot-output)"
+          mkdir -p "$OUTDIR/bbot-output"
+          # run bbot and capture logs (non-fatal)
+          bbot -t ${{ matrix.domain }} -p subdomain-enum -rf passive -ef aggressive -em massdns,asn,wappalyzer -o "$BBOT_OUTDIR" -om subdomains --silent --yes' || true
+          echo "bbot run logs (err head):"
+         
+
+          # --- Wait & locate subdomains.txt anywhere under OUTDIR (120s max) ---
           TMP_BBOT="$(mktemp)"
-          mkdir -p "$BBOT_OUTDIR"
-          # wait for nested dir (30s max)
-          nested=""
-          for _ in {1..30}; do
-            nested=$(find "$BBOT_OUTDIR" -mindepth 1 -maxdepth 1 -type d -print -quit 2>/dev/null || true)
-            [[ -n "$nested" ]] && break
+          FOUND=""
+          for i in $(seq 1 120); do
+            FOUND=$(find "BBOT_OUTDIR" -type f -iname 'subdomains.txt' -print -quit 2>/dev/null || true)
+            if [[ -n "$FOUND" ]]; then break; fi
             sleep 1
           done
 
-          # find the subdomains.txt file inside the nested dir
-          subf=""
-          if [[ -n "$nested" ]]; then
-            subf=$(find "$nested" -type f -iname 'subdomains.txt' -print -quit 2>/dev/null || true)
-          fi
-
-          # process if found, else create empty tmp
-          if [[ -n "$subf" ]]; then
-            sed -E 's#^https?://##I; s/^[*.]+//; s/^[.]+//; s/[.]+$//; s/^[[:space:]]+//; s/[[:space:]]+$//' "$subf" \
+          if [[ -n "$FOUND" ]]; then
+            sed -E 's#^https?://##I; s/^[*.]+//; s/^[.]+//; s/[.]+$//; s/^[[:space:]]+//; s/[[:space:]]+$//' "$FOUND" \
               | tr '[:upper:]' '[:lower:]' \
               | grep -E '^[a-z0-9]([a-z0-9-]*\.)+[a-z]{2,}$' --color=never \
               | sort -u > "$TMP_BBOT"
           else
+            # no subdomains.txt found
             : > "$TMP_BBOT"
           fi
 
           mv -f "$TMP_BBOT" "$BBOT_TXT"
           chmod 644 "$BBOT_TXT"
-          echo "bbot lines: $(wc -l < "$BBOT_TXT")"
+          echo "bbot lines: $(wc -l < "$BBOT_TXT)"
 
           ls -ld "$BBOT_OUTDIR" || true; nested=$(find "$BBOT_OUTDIR" -mindepth 1 -maxdepth 1 -type d -print -quit || true); echo "nested=$nested"; if [[ -n "$nested" ]]; then echo "files:"; find "$nested" -type f -print -exec sh -c 'echo "---- {} ----"; head -n 20 "{}"; echo' \;; fi
 
@@ -263,7 +263,6 @@ jobs:
           echo "all_subdomains lines: $(wc -l < "$TARGET")"
     
           # Count all Subdomains
-
        
       - name: Upload all_subdomains.txt for 
         uses: actions/upload-artifact@v4
