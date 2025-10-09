@@ -206,7 +206,7 @@ jobs:
           done
 
           # safe regex usage: store pattern in a variable and use grep -E -- "$PATTERN"
-          PATTERN='^[a-z0-9]([a-z0-9-]*\.)+[a-z]{2,}$'
+          PATTERN='^[a-z0-9][a-z0-9.-]*\.[a-z][a-z]+$'
 
           # example: normalize and validate an input file -> normalized.tmp
           IN_FILE="$FOUND"   
