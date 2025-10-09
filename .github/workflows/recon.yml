@@ -192,24 +192,21 @@ jobs:
           echo "Running bbot directly (output -> $OUTDIR/bbot-output)"
           mkdir -p "$OUTDIR/bbot-output"
           # run bbot and capture logs (non-fatal)
-          bbot -t ${{ matrix.domain }} -p subdomain-enum -rf passive -ef aggressive -em massdns,asn,wappalyzer -o "$BBOT_OUTDIR" -om subdomains --silent --yes' || true
+          bbot -t "${{ matrix.domain }}" -p subdomain-enum -rf passive -ef aggressive -em massdns,asn,wappalyzer -o "$BBOT_OUTDIR" -om subdomains --silent --yes || true
           echo "bbot run logs (err head):"
-         
+          head -c 400 "$OUTDIR/bbot.run.err" 2>/dev/null || true
 
           # --- Wait & locate subdomains.txt anywhere under OUTDIR (120s max) ---
           TMP_BBOT="$(mktemp)"
           FOUND=""
           for i in $(seq 1 120); do
-            FOUND=$(find "BBOT_OUTDIR" -type f -iname 'subdomains.txt' -print -quit 2>/dev/null || true)
+            FOUND=$(find "$BBOT_OUTDIR" -type f -iname 'subdomains.txt' -print -quit 2>/dev/null || true)
             if [[ -n "$FOUND" ]]; then break; fi
             sleep 1
           done
 
-          # safe regex usage: store pattern in a variable and use grep -E -- "$PATTERN"
-          
-
           # example: normalize and validate an input file -> normalized.tmp
-          IN_FILE="$FOUND"   
+          IN_FILE="$FOUND"
 
           if [[ -n "$IN_FILE" && -f "$IN_FILE" ]]; then
             sed -E "s#^https?://##I; s/^[*.]+//; s/^[.]+//; s/[.]+$//; s/^[[:space:]]+//; s/[[:space:]]+$//" "$IN_FILE" \
@@ -218,11 +215,9 @@ jobs:
             : > "$TMP_BBOT"
           fi
 
-          mv -f "$TMP_BBOT" "$BBOT_TXT"
-          chmod 644 "$BBOT_TXT"
-          echo "bbot lines: $(wc -l < "$BBOT_TXT)"
-
-          ls -ld "$BBOT_OUTDIR" || true; nested=$(find "$BBOT_OUTDIR" -mindepth 1 -maxdepth 1 -type d -print -quit || true); echo "nested=$nested"; if [[ -n "$nested" ]]; then echo "files:"; find "$nested" -type f -print -exec sh -c 'echo "---- {} ----"; head -n 20 "{}"; echo' \;; fi
+          mv -f "$TMP_BBOT" "$BBOT_TX"
+          chmod 644 "$BBOT_TX"
+          echo "bbot lines: $(wc -l < "$BBOT_TX")"
 
           # --- External: download and normalize (fixed sed input) ---
           mkdir -p "$OUTDIR"
@@ -243,7 +238,7 @@ jobs:
             "$OUTDIR/amass.txt"
             "$OUTDIR/shrewdeye.txt"
             "$ONEFORALL_TXT"
-            "$BBOT_TXT"
+            "$BBOT_TX"
             "$OUTDIR/chaos.txt"
             "$EXTERNAL_FINAL"
           )
@@ -261,7 +256,7 @@ jobs:
           mv -f "$TMP_ALL" "$TARGET"
           chmod 644 "$TARGET"
           echo "all_subdomains lines: $(wc -l < "$TARGET")"
-    
+
           # Count all Subdomains
        
       - name: Upload all_subdomains.txt for 
