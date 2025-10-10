@@ -192,7 +192,7 @@ jobs:
           echo "Running bbot directly (output -> $OUTDIR/bbot-output)"
           mkdir -p "$OUTDIR/bbot-output"
           # run bbot and capture logs (non-fatal)
-          bbot -t "${{ matrix.domain }}" -p subdomain-enum -rf passive -ef aggressive -em massdns,asn,wappalyzer -o "$BBOT_OUTDIR" -om json,subdomains --verbose --yes 
+          bbot -t "${{ matrix.domain }}" -p subdomain-enum -rf passive -ef aggressive -em massdns,asn,wappalyzer -o "$BBOT_OUTDIR" -om json,subdomains -y 
           echo "bbot run logs (err head):"
           head -c 400 "$OUTDIR/bbot.run.err" 2>/dev/null || true
 
