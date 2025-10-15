@@ -137,155 +137,111 @@ jobs:
           python3 Interlace/interlace.py -h
           cd ..
 
-      - name: Run Subdomain Enumeration for ${{ matrix.domain }}
+      - name: Run Subdomain Enumeration (interlace + bbot) for ${{ matrix.domain }}
         shell: bash
+        env:
+          DOMAIN: ${{ matrix.domain }}
         run: |
-          TMP_ONEFOR="$(mktemp)"
-          OUTDIR="results/${{ matrix.domain }}"
-          JSONFILE="${OUTDIR}/oneforall.json"
-          ONEFORALL_TXT="${OUTDIR}/oneforall.txt"
-
-          BBOT_OUTDIR="results/${{ matrix.domain }}/bbot-output"
-          BBOT_TXT="${OUTDIR}/bbot.txt"
-          EXTERNAL_TX="$(mktemp)"
-          EXTERNAL_FINAL="${OUTDIR}/external.txt"
-          TARGET="${OUTDIR}/all_subdomains.txt"
-
-          echo "Scanning domain: ${{ matrix.domain }}"
-
-          # run interlace (cli.txt drives the tools)
-          interlace \
-            -t ${{ matrix.domain }} \
-            -threads 6 \
-            -cL cli.txt \
-            -o "$OUTDIR" \
-            -v
-
-          assetfinder -subs-only ${{ matrix.domain }} | sed -E "s#^https?://##I; s/^[*.]+//; s/[.]+$//; s/^[[:space:]]+//; s/[[:space:]]+$//" |  grep -E '^[a-z0-9]([a-z0-9-]*\.)+[a-z]{2,}$' --color=never | inscope --scope .scope | anew -q "$OUTDIR/assetfinder.txt" || true
-
-          echo "Debug: check PDCP_KEY is present (length only)"
-          if [ -z "${PDCP_KEY:-}" ]; then
-            echo "PDCP_KEY is MISSING in this environment"
-          else
-            # print length only (safe)
-            echo "PDCP_KEY present, length=$(printf '%s' "$PDCP_KEY" | wc -c)"
-          fi
-
-          chaos -d "${{ matrix.domain }}" -o "$OUTDIR/chaos.txt" -key "${PDCP_KEY}" -silent || true
-         
           
-          # --- oneforall: extract subdomain entries (fixed jq usage) ---
-          if [[ -s "$JSONFILE" ]]; then
-            jq -r '.. | objects | .subdomain? // empty' "$JSONFILE" \
-              | sed -E "s#^https?://##I; s/^[*.]+//; s/[.]+$//; s/^[[:space:]]+//; s/[[:space:]]+$//" \
-              | grep -E '^[a-z0-9]([a-z0-9-]*\.)+[a-z]{2,}$' --color=never \
-              | sort -u > "$TMP_ONEFOR" || true
+          echo "======== ENVIRONMENT ========"
+          echo "Working directory: $(pwd)"
+          echo "User: $(whoami)"
+          echo "Home: $HOME"
+          echo "PATH: $PATH"
+          echo "======== CHECK BBOT (if installed) ========"
+          if command -v bbot >/dev/null 2>&1; then
+            echo "bbot found: $(which bbot)"
+            bbot --version || true
           else
-            : > "$TMP_ONEFOR"
-          fi
-          mv -f "$TMP_ONEFOR" "$ONEFORALL_TXT"
-          chmod 644 "$ONEFORALL_TXT"
-          echo "oneforall lines: $(wc -l < "$ONEFORALL_TXT")"
-
-          # --- BBOT extraction (short logic, prefer subdomains.txt then JSON) ---
-          bbot --help
-          echo "Running bbot directly (output -> $OUTDIR/bbot-output)"
-          mkdir -p "$OUTDIR/bbot-output"
-          # run bbot and capture logs (non-fatal)
-          bbot -t "${{ matrix.domain }}" -p subdomain-enum -rf passive -ef aggressive -em massdns,asn,wappalyzer -o "$BBOT_OUTDIR" -om json,subdomains -y 
-          echo "bbot run logs (err head):"
-          head -c 400 "$OUTDIR/bbot.run.err" 2>/dev/null || true
-
-          echo "=== BBOT captured logs (first 200 bytes stderr/stdout) ==="
-          head -c 200 "results/${{ matrix.domain }}/bbot.run.err" 2>/dev/null || echo "(no bbot.run.err)"
-          head -c 200 "results/${{ matrix.domain }}/bbot.run.log" 2>/dev/null || echo "(no bbot.run.log)"
-
-          echo "=== OUTDIR listing (top 3 levels): ==="
-          find "results/${{ matrix.domain }}" -maxdepth 3 -type d -print -exec ls -la {} \; 2>/dev/null || true
-
-          echo "=== Any subdomains.* files (case-ins) and their sizes: ==="
-          find "results/${{ matrix.domain }}" -type f \( -iname "subdomains.txt" -o -iname "*subdomains*" -o -iname "*subdomain*" \) -printf "%p %s\n" -quit 2>/dev/null || true
-
-          echo "=== Grep domain-like tokens from any file under OUTDIR (first 40 matches) ==="
-          grep -Eoi "([a-z0-9-]+\.)+[a-z]{2,}" "results/${{ matrix.domain }}" -R --no-messages | sed -n "1,40p" || echo "(no domain-like tokens found)" 
-
-          echo "=== Show any JSON files under OUTDIR (first file sample) ==="
-          j=$(find "results/${{ matrix.domain }}" -type f -iname "*.json" -print -quit || true)
-          if [[ -n "$j" ]]; then
-            echo "example json: $j"
-            head -n 50 "$j" | sed -n "1,200p"
-          else
-            echo "no json files found under results/${{ matrix.domain }}"
+            echo "bbot not found in PATH. Since you mentioned it's already installed, ensure the container image includes it or adjust PATH."
           fi
 
-          # --- Wait & locate subdomains.txt anywhere under OUTDIR (120s max) ---
-          TMP_BBOT="$(mktemp)"
-          FOUND=""
-          for i in $(seq 1 120); do
-            FOUND=$(find "$BBOT_OUTDIR" -type f -iname "subdomains.txt" -print -quit 2>/dev/null || true)
-            if [[ -n "$FOUND" ]]; then break; fi
-            sleep 1
+          echo "======== Running interlace against ${DOMAIN} ========"
+          mkdir -p results/${DOMAIN}
+          interlace \
+            -t "${DOMAIN}" \
+            -threads 3 \
+            -cL cli.txt \
+            -o results/"${DOMAIN}" \
+            -v || echo "interlace finished (status $?)"
+
+          echo "Combined results (interlace):"
+          ls -la results/"${DOMAIN}" || true
+
+          # Merge common outputs if they exist (safe: only if files exist)
+          echo "Merging known files if present..."
+          for f in subfinder.txt assetfinder.txt amass.txt; do
+            [ -f results/"${DOMAIN}"/${f} ] && cat results/"${DOMAIN}"/${f} >> results/"${DOMAIN}"/combined_interlace.txt || true
+          done
+          if [ -f results/"${DOMAIN}"/combined_interlace.txt ]; then
+            inscope --scope .scope < results/"${DOMAIN}"/combined_interlace.txt | sort -u > results/"${DOMAIN}"/all_subdomains_interlace.txt || true
+            wc -l results/"${DOMAIN}"/all_subdomains_interlace.txt || true
+          fi
+
+          echo "======== Running BBOT (passive subdomain-enum) ========"
+          # Ensure results dir exists and is owned by the runner
+          mkdir -p results/"${DOMAIN}"/bbot-output
+          chmod -R u+rwX results/"${DOMAIN}"
+
+          # Use these BBOT flags:
+          # -t <target>
+          # -p subdomain-enum            (use subdomain preset)
+          # -rf passive                  (require only passive-flag modules)
+          # -em <modules...>             (exclude specific modules)
+          # -ef aggressive               (exclude modules with aggressive flag)
+          # -y                           (skip confirmation)
+          # -o / --output-dir            (write outputs to this directory)
+          # -n / --name                  (explicit scan name)
+          #
+          # Exclude list: massdns, asn, wappalyzer (adjust as needed)
+          BBOT_OUTPUT_DIR="results/${DOMAIN}/bbot-output"
+          BBOT_SCANNAME="bbot_${DOMAIN}_scan"
+
+          # Run BBOT. If bbot binary is not at PATH, this will fail — see diagnostic prints above.
+          bbot -t "${DOMAIN}" \
+            -p subdomain-enum \
+            -rf passive \
+            -em massdns asn wappalyzer \
+            -ef aggressive \
+            -y \
+            -o "${BBOT_OUTPUT_DIR}" \
+            -n "${BBOT_SCANNAME}" || echo "bbot exit code: $?"
+
+          echo "Listing BBOT output directory (explicit output-dir):"
+          ls -la "${BBOT_OUTPUT_DIR}" || true
+
+          echo "Listing default BBOT scans directory (~/.bbot/scans) in case BBOT still used that:"
+          ls -la "$HOME/.bbot/scans" || true
+          ls -lt "$HOME/.bbot/scans" | head -n 10 || true
+
+          # If BBOT wrote to its default location, copy the latest scan to the workspace so upload-artifact picks it up
+          if [ -d "$HOME/.bbot/scans" ] && [ "$(ls -A $HOME/.bbot/scans || true)" != "" ]; then
+            LATEST=$(ls -1t "$HOME/.bbot/scans" | head -n1)
+            if [ -n "${LATEST:-}" ]; then
+              echo "Copying latest BBOT default scan '$LATEST' into results/${DOMAIN}/bbot-default-copy"
+              mkdir -p results/"${DOMAIN}"/bbot-default-copy
+              cp -a "$HOME/.bbot/scans/${LATEST}/." results/"${DOMAIN}"/bbot-default-copy/ || true
+            fi
+          fi
+
+          echo "Check for canonical outputs:"
+          for f in "${BBOT_OUTPUT_DIR}/subdomains.txt" "${BBOT_OUTPUT_DIR}/output.txt" "${BBOT_OUTPUT_DIR}/output.json" results/"${DOMAIN}"/bbot-default-copy/output.txt; do
+            if [ -f "$f" ]; then
+              echo "File $f exists (size=$(stat -c%s "$f")) lines=$(wc -l < "$f" || true)"
+            else
+              echo "File $f not found"
+            fi
           done
 
-          # example: normalize and validate an input file -> normalized.tmp
-          IN_FILE="$FOUND"
+          echo "Final listing results/${DOMAIN}:"
+          ls -la results/"${DOMAIN}" || true
 
-          if [[ -n "$IN_FILE" && -f "$IN_FILE" ]]; then
-            sed -E "s#^https?://##I; s/^[*.]+//; s/^[.]+//; s/[.]+$//; s/^[[:space:]]+//; s/[[:space:]]+$//" "$IN_FILE" \
-              | sort -u > "$TMP_BBOT"
-          else
-            : > "$TMP_BBOT"
-          fi
-
-          mv -f "$TMP_BBOT" "$BBOT_TXT"
-          chmod 644 "$BBOT_TXT"
-          echo "bbot lines: $(wc -l < "$BBOT_TXT")"
-
-          # --- External: download and normalize (fixed sed input) ---
-          mkdir -p "$OUTDIR"
-          REMOTE_URL="https://raw.githubusercontent.com/rix4uni/BugBountyData/refs/heads/main/data/${{ matrix.domain }}.txt"
-          if curl -fsSL "$REMOTE_URL" -o "$EXTERNAL_TX"; then
-            sed -E "s#^https?://##I; s/^[*.]+//; s/[.]+$//; s/^[[:space:]]+//; s/[[:space:]]+$//" "$EXTERNAL_TX" \
-              | sort -u > "$EXTERNAL_FINAL" || true
-          else
-            : > "$EXTERNAL_FINAL"
-          fi
-          rm -f "$EXTERNAL_TX"
-          echo "external lines: $(wc -l < "$EXTERNAL_FINAL")"
-
-          # --- Combine: only cat files that exist to avoid errors ---
-          FILES=(
-            "$OUTDIR/subfinder.txt"
-            "$OUTDIR/assetfinder.txt"
-            "$OUTDIR/amass.txt"
-            "$OUTDIR/shrewdeye.txt"
-            "$ONEFORALL_TXT"
-            "$BBOT_TXT"
-            "$OUTDIR/chaos.txt"
-            "$EXTERNAL_FINAL"
-          )
-
-          # create a temp aggregate file then move atomically
-          TMP_ALL="$(mktemp)"
-          for f in "${FILES[@]}"; do
-            if [[ -f "$f" && -s "$f" ]]; then
-              sed -E "s#^https?://##I; s/^[*.]+//; s/[.]+$//; s/^[[:space:]]+//; s/[[:space:]]+$//" "$f"
-            fi
-          done \
-            | inscope --scope .scope \
-            | sort -u > "$TMP_ALL" || true
-
-          mv -f "$TMP_ALL" "$TARGET"
-          chmod 644 "$TARGET"
-          echo "all_subdomains lines: $(wc -l < "$TARGET")"
-
-          # Count all Subdomains
-       
-      - name: Upload all_subdomains.txt for 
+      - name: Upload all results for ${{ matrix.domain }}
         uses: actions/upload-artifact@v4
         with:
           name: recon-results-${{ matrix.domain }}
-          path: results/${{ matrix.domain }}
+          path: |
+            results/${{ matrix.domain }}
           retention-days: 1
 
   commit_results:
