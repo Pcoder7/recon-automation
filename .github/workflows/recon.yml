@@ -201,7 +201,7 @@ jobs:
           bbot -t "${DOMAIN}" \
             -p subdomain-enum \
             -rf passive \
-            -em massdns asn wappalyzer \
+            -em baddns baddns_direct baddns_zone asn wappalyzer builtwith \
             -ef aggressive \
             -y \
             -o "${BBOT_OUTPUT_DIR}" \
