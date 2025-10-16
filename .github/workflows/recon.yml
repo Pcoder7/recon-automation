@@ -143,96 +143,136 @@ jobs:
           DOMAIN: ${{ matrix.domain }}
         run: |
           
-          echo "======== ENVIRONMENT ========"
-          echo "Working directory: $(pwd)"
-          echo "User: $(whoami)"
-          echo "Home: $HOME"
-          echo "PATH: $PATH"
-          echo "======== CHECK BBOT (if installed) ========"
+          echo "==== ENV ===="
+          echo "PWD: $(pwd)"
+          echo "USER: $(whoami)"
+          echo "HOME: $HOME"
+          echo "DOMAIN: ${DOMAIN}"
+          echo "==== CHECK BBOT ===="
           if command -v bbot >/dev/null 2>&1; then
-            echo "bbot found: $(which bbot)"
+            echo "bbot -> $(which bbot)"
             bbot --version || true
           else
-            echo "bbot not found in PATH. Since you mentioned it's already installed, ensure the container image includes it or adjust PATH."
+            echo "bbot not found in PATH. Ensure container contains bbot or adjust PATH."
           fi
 
-          echo "======== Running interlace against ${DOMAIN} ========"
-          mkdir -p results/${DOMAIN}
+          echo "==== run interlace ===="
+          mkdir -p results/"${DOMAIN}"
           interlace \
             -t "${DOMAIN}" \
             -threads 3 \
             -cL cli.txt \
             -o results/"${DOMAIN}" \
-            -v || echo "interlace finished (status $?)"
+            -v || echo "interlace returned $?"
 
-          echo "Combined results (interlace):"
+          echo "interlace outputs:"
           ls -la results/"${DOMAIN}" || true
 
-          # Merge common outputs if they exist (safe: only if files exist)
-          echo "Merging known files if present..."
-          for f in subfinder.txt assetfinder.txt amass.txt; do
-            [ -f results/"${DOMAIN}"/${f} ] && cat results/"${DOMAIN}"/${f} >> results/"${DOMAIN}"/combined_interlace.txt || true
-          done
-          if [ -f results/"${DOMAIN}"/combined_interlace.txt ]; then
-            inscope --scope .scope < results/"${DOMAIN}"/combined_interlace.txt | sort -u > results/"${DOMAIN}"/all_subdomains_interlace.txt || true
-            wc -l results/"${DOMAIN}"/all_subdomains_interlace.txt || true
+          # merge interlace outputs if present
+          if [ -f results/"${DOMAIN}"/subfinder.txt ] || [ -f results/"${DOMAIN}"/assetfinder.txt ] || [ -f results/"${DOMAIN}"/amass.txt ]; then
+            cat results/"${DOMAIN}"/subfinder.txt results/"${DOMAIN}"/assetfinder.txt results/"${DOMAIN}"/amass.txt 2>/dev/null | inscope --scope .scope | sort -u > results/"${DOMAIN}"/all_subdomains_interlace.txt || true
+            echo "all_subdomains_interlace.txt lines: $(wc -l < results/${DOMAIN}/all_subdomains_interlace.txt || echo 0)"
+          else
+            echo "No known interlace subdomain files found to combine."
           fi
 
-          echo "======== Running BBOT (passive subdomain-enum) ========"
-          # Ensure results dir exists and is owned by the runner
+          echo "==== run BBOT (passive subdomain-enum) ===="
           mkdir -p results/"${DOMAIN}"/bbot-output
           chmod -R u+rwX results/"${DOMAIN}"
 
-          # Use these BBOT flags:
-          # -t <target>
-          # -p subdomain-enum            (use subdomain preset)
-          # -rf passive                  (require only passive-flag modules)
-          # -em <modules...>             (exclude specific modules)
-          # -ef aggressive               (exclude modules with aggressive flag)
-          # -y                           (skip confirmation)
-          # -o / --output-dir            (write outputs to this directory)
-          # -n / --name                  (explicit scan name)
-          #
-          # Exclude list: massdns, asn, wappalyzer (adjust as needed)
           BBOT_OUTPUT_DIR="results/${DOMAIN}/bbot-output"
           BBOT_SCANNAME="bbot_${DOMAIN}_scan"
+          SCAN_DIR="${BBOT_OUTPUT_DIR}/${BBOT_SCANNAME}"
 
-          # Run BBOT. If bbot binary is not at PATH, this will fail — see diagnostic prints above.
+          # Run BBOT (passive-only), exclude massdns, asn, wappalyzer and aggressive modules; force output-dir & name
           bbot -t "${DOMAIN}" \
             -p subdomain-enum \
             -rf passive \
-            -em baddns baddns_direct baddns_zone asn wappalyzer builtwith \
+            -em massdns asn wappalyzer \
             -ef aggressive \
             -y \
             -o "${BBOT_OUTPUT_DIR}" \
-            -n "${BBOT_SCANNAME}" || echo "bbot exit code: $?"
+            -n "${BBOT_SCANNAME}" || echo "bbot exited with code $?"
 
-          echo "Listing BBOT output directory (explicit output-dir):"
+          echo "Listing explicit BBOT output directory:"
           ls -la "${BBOT_OUTPUT_DIR}" || true
 
-          echo "Listing default BBOT scans directory (~/.bbot/scans) in case BBOT still used that:"
+          echo "Listing BBOT default scans dir (~/.bbot/scans) in case BBOT wrote there:"
           ls -la "$HOME/.bbot/scans" || true
-          ls -lt "$HOME/.bbot/scans" | head -n 10 || true
+          ls -lt "$HOME/.bbot/scans" | head -n 5 || true
 
-          # If BBOT wrote to its default location, copy the latest scan to the workspace so upload-artifact picks it up
-          if [ -d "$HOME/.bbot/scans" ] && [ "$(ls -A $HOME/.bbot/scans || true)" != "" ]; then
-            LATEST=$(ls -1t "$HOME/.bbot/scans" | head -n1)
-            if [ -n "${LATEST:-}" ]; then
-              echo "Copying latest BBOT default scan '$LATEST' into results/${DOMAIN}/bbot-default-copy"
+          # If BBOT wrote to default location, copy latest into workspace results
+          if [ -d "$HOME/.bbot/scans" ] && [ "$(ls -A "$HOME/.bbot/scans" 2>/dev/null || true)" != "" ]; then
+            LATEST_DIR=$(ls -1t "$HOME/.bbot/scans" | head -n1 || true)
+            if [ -n "${LATEST_DIR}" ]; then
+              echo "Copying latest default BBOT scan '$LATEST_DIR' -> results/${DOMAIN}/bbot-default-copy"
               mkdir -p results/"${DOMAIN}"/bbot-default-copy
-              cp -a "$HOME/.bbot/scans/${LATEST}/." results/"${DOMAIN}"/bbot-default-copy/ || true
+              cp -a "$HOME/.bbot/scans/${LATEST_DIR}/." results/"${DOMAIN}"/bbot-default-copy/ || true
             fi
           fi
 
-          echo "Check for canonical outputs:"
-          for f in "${BBOT_OUTPUT_DIR}/subdomains.txt" "${BBOT_OUTPUT_DIR}/output.txt" "${BBOT_OUTPUT_DIR}/output.json" results/"${DOMAIN}"/bbot-default-copy/output.txt; do
-            if [ -f "$f" ]; then
-              echo "File $f exists (size=$(stat -c%s "$f")) lines=$(wc -l < "$f" || true)"
-            else
-              echo "File $f not found"
-            fi
-          done
+          # --- Use find to grab subdomains.txt files from the BBOT scan dir(s) and create exactly one file ----
+          mkdir -p results/"${DOMAIN}"
+          # Prefer explicit scan dir produced by -o -n
+          if [ -d "${SCAN_DIR}" ]; then
+            echo "Found explicit scan dir: ${SCAN_DIR}"
+            # Concatenate any subdomains.txt found under the scan dir into one file
+            find "${SCAN_DIR}" -type f -name 'subdomains.txt' -exec cat {} + > results/"${DOMAIN}"/bbot-subdomains.txt || true
+          else
+            echo "Explicit scan dir ${SCAN_DIR} not found. Searching under ${BBOT_OUTPUT_DIR} ..."
+            find "${BBOT_OUTPUT_DIR}" -type f -name 'subdomains.txt' -exec cat {} + > results/"${DOMAIN}"/bbot-subdomains.txt || true
+          fi
 
+          # If nothing found in explicit output-dir, check default BBOT location copy
+          if [ ! -s results/"${DOMAIN}"/bbot-subdomains.txt ] && [ -d results/"${DOMAIN}"/bbot-default-copy ]; then
+            echo "No subdomains in explicit output-dir; checking bbot-default-copy ..."
+            find results/"${DOMAIN}"/bbot-default-copy -type f -name 'subdomains.txt' -exec cat {} + > results/"${DOMAIN}"/bbot-subdomains.txt || true
+          fi
+
+          if [ -s results/"${DOMAIN}"/bbot-subdomains.txt ]; then
+            echo "BBOT subdomains collected: $(wc -l < results/${DOMAIN}/bbot-subdomains.txt)"
+          else
+            echo "No bbot-subdomains.txt created or file is empty."
+          fi
+
+          # --- Clean up BBOT scan folder: keep only subdomains.txt files (user requested minimal files) ---
+          if [ -d "${SCAN_DIR}" ]; then
+            echo "Cleaning up ${SCAN_DIR}: deleting all files except subdomains.txt"
+            find "${SCAN_DIR}" -type f ! -name 'subdomains.txt' -delete || true
+            # remove empty directories left behind
+            find "${SCAN_DIR}" -type d -empty -delete || true
+            echo "Post-cleanup listing for ${SCAN_DIR}:"
+            ls -la "${SCAN_DIR}" || true
+          fi
+
+          # Also clean up any copies made
+          if [ -d results/"${DOMAIN}"/bbot-default-copy ]; then
+            echo "Cleaning up bbot-default-copy: deleting files except subdomains.txt"
+            find results/"${DOMAIN}"/bbot-default-copy -type f ! -name 'subdomains.txt' -delete || true
+            find results/"${DOMAIN}"/bbot-default-copy -type d -empty -delete || true
+            ls -la results/"${DOMAIN}"/bbot-default-copy || true
+          fi
+
+          # --- Combine BBOT subdomains with interlace combined file into a single all_subdomains.txt ----
+          INTERLACE_FILE=results/"${DOMAIN}"/all_subdomains_interlace.txt
+          BBOT_FILE=results/"${DOMAIN}"/bbot-subdomains.txt
+          OUT_FILE=results/"${DOMAIN}"/all_subdomains.txt
+
+          echo "Combining files:"
+          echo "  Interlace: ${INTERLACE_FILE} (exists: $( [ -f "${INTERLACE_FILE}" ] && echo yes || echo no ))"
+          echo "  BBOT:      ${BBOT_FILE} (exists: $( [ -f "${BBOT_FILE}" ] && echo yes || echo no ))"
+
+          if [ -f "${INTERLACE_FILE}" ] && [ -f "${BBOT_FILE}" ]; then
+            cat "${INTERLACE_FILE}" "${BBOT_FILE}" | sort -u > "${OUT_FILE}"
+          elif [ -f "${INTERLACE_FILE}" ]; then
+            sort -u "${INTERLACE_FILE}" > "${OUT_FILE}"
+          elif [ -f "${BBOT_FILE}" ]; then
+            sort -u "${BBOT_FILE}" > "${OUT_FILE}"
+          else
+            echo "# no subdomains found from interlace or bbot" > "${OUT_FILE}"
+          fi
+
+          echo "Final all_subdomains.txt lines: $(wc -l < "${OUT_FILE}" || echo 0)"
           echo "Final listing results/${DOMAIN}:"
           ls -la results/"${DOMAIN}" || true
 
