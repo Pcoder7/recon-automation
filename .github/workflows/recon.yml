@@ -265,9 +265,9 @@ jobs:
             cat > /usr/local/bin/theHarvester << 'EOF'
           #!/bin/bash
           export PATH="$HOME/.local/bin:$PATH"
-          cd /opt/theHarvester
+          pushd /opt/theHarvester >/dev/null || true
           uv run theHarvester "$@"
-          cd ../..
+          popd >/dev/null || true
           EOF
             
             chmod +x /usr/local/bin/theHarvester
@@ -365,102 +365,152 @@ jobs:
           rm -f "$EXTERNAL_TX"
           echo "external lines: $(wc -l < "$EXTERNAL_FINAL")"        
 
+
+          echo "======= Running Harvester ========="
+
+          WORKSPACE="${GITHUB_WORKSPACE:-$(pwd)}"
+          RESULTS_DIR="${WORKSPACE}/results/${DOMAIN}"
+          mkdir -p "${RESULTS_DIR}"
+
+          # Use an absolute path for theHarvester output to avoid issues with wrapper's cwd
+          THEHARVEST_JSON="${RESULTS_DIR}/theharvester.json"
+
+          echo "theHarvester will write to: ${THEHARVEST_JSON}"
+          # ensure parent dir exists (already created above) and is writable
+          mkdir -p "$(dirname "${THEHARVEST_JSON}")"
+          chmod -R u+rwX "$(dirname "${THEHARVEST_JSON}")" || true
+          
+          # Run theHarvester; pass absolute -f path so it writes to workspace regardless of its cwd
+          # If you have a wrapper, it likely cd's into /opt/theHarvester; absolute path avoids that problem.
+          if command -v theHarvester >/dev/null 2>&1; then
+            echo "Invoking theHarvester (absolute output path)"
+            # run with timeout to avoid hangs
+            timeout 10m theHarvester -d "${DOMAIN}" -b all -f "${THEHARVEST_JSON}" --quiet || echo "theHarvester exited with non-zero code"
+          else
+            echo "theHarvester binary not found in PATH; attempting direct python invocation from /opt/theHarvester"
+            if [ -d "/opt/theHarvester" ]; then
+              pushd "/opt/theHarvester" >/dev/null || true
+              # try to run whatever entrypoint exists (best-effort)
+              python3 theHarvester.py -d "${DOMAIN}" -b all -f "${THEHARVEST_JSON}" --quiet || true
+              popd >/dev/null || true
+            else
+              echo "No theHarvester installation found; creating empty theHarvester.json and continuing"
+              : > "${THEHARVEST_JSON}"
+            fi
+          fi
+          
+          # Verify file exists before trying to filter
+          if [ ! -s "${THEHARVEST_JSON}" ]; then
+            echo "[!] theHarvester did not produce ${THEHARVEST_JSON} (file missing/empty). Creating empty JSON and theHarvester.txt to avoid downstream failure."
+            : > "${THEHARVEST_JSON}"
+            : > "${RESULTS_DIR}/theHarvester.txt"
+          else
+            echo "Filtering the Harvester json file: ${THEHARVEST_JSON}"
+            jq -r '.hosts | map(select(type=="string") | split(":")[0]) | unique[]' "${THEHARVEST_JSON}" \
+              | sed 's/^\*\.//' \
+              | sed 's/^[[:space:]]*//; s/[[:space:]]*$//' \
+              | grep -P "^(?=.{1,253}$)(?:[A-Za-z0-9](?:[A-Za-z0-9-]{0,61}[A-Za-z0-9])?\.)+[A-Za-z]{2,63}$" --color=never \
+              > "${RESULTS_DIR}/theHarvester.txt" || true
+            echo "theHarvester outputs normalized into ${RESULTS_DIR}/theHarvester.txt (lines: $(wc -l < "${RESULTS_DIR}/theHarvester.txt" || echo 0))"
+          fi
           
           echo "==== Collecting Sudomy results ===="
+          WORKSPACE="${GITHUB_WORKSPACE:-$(pwd)}"
+          DOMAIN="${DOMAIN:?DOMAIN must be set}"
+          WORK_RESULTS_DIR="${WORKSPACE}/results/${DOMAIN}"
+          mkdir -p "${WORK_RESULTS_DIR}"
+          echo "Workspace results dir: ${WORK_RESULTS_DIR}
           
-          # Use the environment variable set during installation
-          SUDOMY_INSTALL_DIR="${SUDOMY_INSTALL_DIR:-/opt/sudomy}"
-          SUDOMY_OUTPUT_BASE="${SUDOMY_INSTALL_DIR}/output"
+          # Put Sudomy into workspace (avoid /opt to prevent permission/partial-install issues)
+          SUDOMY_DIR="${WORKSPACE}/sudomy"
+          SUDOMY_OUTPUT_BASE="${SUDOMY_DIR}/output"
           
-          echo "Sudomy installation directory: ${SUDOMY_INSTALL_DIR}"
-          echo "Sudomy output base directory: ${SUDOMY_OUTPUT_BASE}"
+          # Ensure minimal required system deps (avoid nodejs install here)
+          echo "Installing required system packages (best-effort): nmap jq git chromium-browser"
+
           
-          # Make sure required binaries exist (install if missing)
-          if ! command -v nmap >/dev/null 2>&1; then
-            echo "nmap missing -> attempting install (apt-get)"
-            apt-get update -y
-            apt-get install -y nmap jq nodejs npm || true
+          echo "Debug: which nmap: $(which nmap || true)"
+          echo "Debug: which git: $(which git || true)"
+          echo "Debug: which chromium-browser: $(which chromium-browser || true)"
+          
+          # Clone Sudomy into workspace (guaranteed writable)
+          if [ ! -d "${SUDOMY_DIR}" ]; then
+            echo "Cloning Sudomy into ${SUDOMY_DIR}"
+            git clone --depth 1 --recursive https://github.com/screetsec/Sudomy.git "${SUDOMY_DIR}" || {
+              echo "git clone failed — creating empty sudomy.txt and exiting this block"
+              touch "${WORK_RESULTS_DIR}/sudomy.txt"
+              exit 0
+            }
+          else
+            echo "Sudomy already present at ${SUDOMY_DIR}; pulling latest"
+            git -C "${SUDOMY_DIR}" pull --ff-only || true
           fi
           
-          # PhantomJS fallback (best-effort, apt often has no candidate)
-          if ! command -v phantomjs >/dev/null 2>&1; then
-            echo "phantomjs not found; attempting npm install -g phantomjs-prebuilt (best-effort)"
-            npm i -g phantomjs-prebuilt || true
-          fi
+          # Ensure python requirements installed into user site (no sudo to avoid permission problems)
+          export PATH="$HOME/.local/bin:$PATH"
+          echo "Installing Python requirements (user install)"
+          python3 -m pip install --user -r "${SUDOMY_DIR}/requirements.txt" || {
+            echo "pip install (user) failed; continuing — Sudomy may still run partially"
+          }
           
-          # Ensure Sudomy repo is present and contains expected files; re-clone if incomplete
-          if [ ! -d "${SUDOMY_INSTALL_DIR}" ] || [ ! -f "${SUDOMY_INSTALL_DIR}/sudomy" ] || [ ! -f "${SUDOMY_INSTALL_DIR}/sudomy.api" ]; then
-            echo "Sudomy appears missing or incomplete at ${SUDOMY_INSTALL_DIR} -> (re)cloning"
-            rm -rf "${SUDOMY_INSTALL_DIR}" || true
-          fi
+          # Debug listing
+          echo "Listing top of Sudomy dir:"
+          ls -la "${SUDOMY_DIR}" | sed -n '1,200p' || true
+          echo "sudomy.api present? $( [ -f "${SUDOMY_DIR}/sudomy.api" ] && echo yes || echo no )"
+          echo "sudomy wrapper present? $( [ -f "${SUDOMY_DIR}/sudomy" ] && echo yes || echo no )"
           
-          # Short debug listing (keeps logs useful)
-          echo "Listing sudomy directory (top):"
-          ls -la "${SUDOMY_INSTALL_DIR}" | sed -n '1,200p' || true
-          echo "sudomy.api present? $( [ -f "${SUDOMY_INSTALL_DIR}/sudomy.api" ] && echo yes || echo no )"
-          echo "which nmap: $(which nmap || true)"
+          # Run Sudomy from repo dir using pushd/popd and prefer python3 ./sudomy.api
+          pushd "${SUDOMY_DIR}" >/dev/null || ( echo "Failed to enter ${SUDOMY_DIR}" && touch "${WORK_RESULTS_DIR}/sudomy.txt" && exit 0 )
           
-          # Run sudomy from its directory, guaranteeing return using pushd/popd
-          pushd "${SUDOMY_INSTALL_DIR}" >/dev/null || ( echo "Failed to enter ${SUDOMY_INSTALL_DIR}" && true )
-          
-          # Prefer direct python invocation if sudomy.api exists (more reliable)
           if [ -f "./sudomy.api" ]; then
             echo "Running: python3 ./sudomy.api -d ${DOMAIN} --no-probe"
-            python3 ./sudomy.api -d "${DOMAIN}" --no-probe || true
-          else
+            timeout 20m python3 ./sudomy.api -d "${DOMAIN}" --no-probe || true
+          elif [ -f "./sudomy" ]; then
             echo "Running: ./sudomy -d ${DOMAIN} --no-probe"
             chmod +x ./sudomy || true
-            ./sudomy -d "${DOMAIN}" --no-probe || true
+            timeout 20m ./sudomy -d "${DOMAIN}" --no-probe || true
+          else
+            echo "No sudomy launcher found; aborting sudomy run and creating empty result file"
+            popd >/dev/null || true
+            touch "${WORK_RESULTS_DIR}/sudomy.txt"
+            echo "==== Completed hardened Sudomy run (no launcher) ===="
+            exit 0
           fi
           
           popd >/dev/null || true
           
-          # Find Sudomy output: today format and fallback search across output dir
+          # Locate Sudomy output for today (MM-DD-YYYY) and fallback search across output dir
           TODAY=$(date +"%m-%d-%Y")
-          SUDOMY_DOMAIN_DIR="${SUDOMY_OUTPUT_BASE}/${TODAY}/${DOMAIN}"
-          echo "Checking Sudomy output at: ${SUDOMY_DOMAIN_DIR}/subdomains.txt"
+          EXPECTED="${SUDOMY_OUTPUT_BASE}/${TODAY}/${DOMAIN}/subdomains.txt"
+          echo "Checking Sudomy output at: ${EXPECTED}"
           
-          if [ -f "${SUDOMY_DOMAIN_DIR}/subdomains.txt" ]; then
-            sed 's/^\*\.//' "${SUDOMY_DOMAIN_DIR}/subdomains.txt" \
+          if [ -f "${EXPECTED}" ]; then
+            echo "Found Sudomy output at expected path; normalizing and copying to workspace"
+            sed 's/^\*\.//' "${EXPECTED}" \
               | sed 's/^[[:space:]]*//; s/[[:space:]]*$//' \
               | grep -P "^(?=.{1,253}$)(?:[A-Za-z0-9](?:[A-Za-z0-9-]{0,61}[A-Za-z0-9])?\.)+[A-Za-z]{2,63}$" --color=never \
               > "${WORK_RESULTS_DIR}/sudomy.txt" || true
           
-            echo "Sudomy results copied to workspace: $(wc -l < "${WORK_RESULTS_DIR}/sudomy.txt" || echo 0) subdomains"
+            echo "Copied ${WORK_RESULTS_DIR}/sudomy.txt (lines: $(wc -l < "${WORK_RESULTS_DIR}/sudomy.txt" || echo 0))"
           else
-            echo "Sudomy subdomains.txt not found at expected path"
-            echo "Listing ${SUDOMY_OUTPUT_BASE} top-level (short):"
-            ls -la "${SUDOMY_OUTPUT_BASE}" 2>/dev/null | sed -n '1,200p' || true
-          
-            FOUND_SUDOMY=$(find "${SUDOMY_OUTPUT_BASE}" -type f -path "*/${DOMAIN}/subdomains.txt" -print -quit 2>/dev/null || true)
-            if [ -n "${FOUND_SUDOMY}" ]; then
-              echo "Found Sudomy output at: ${FOUND_SUDOMY} -> copying"
-              sed 's/^\*\.//' "${FOUND_SUDOMY}" \
+            echo "Sudomy subdomains.txt not at expected path; searching all dates under ${SUDOMY_OUTPUT_BASE}"
+            FOUND=$(find "${SUDOMY_OUTPUT_BASE}" -type f -path "*/${DOMAIN}/subdomains.txt" -print -quit 2>/dev/null || true)
+            if [ -n "${FOUND}" ]; then
+              echo "Found Sudomy output at ${FOUND}; copying to workspace"
+              sed 's/^\*\.//' "${FOUND}" \
                 | sed 's/^[[:space:]]*//; s/[[:space:]]*$//' \
                 | grep -P "^(?=.{1,253}$)(?:[A-Za-z0-9](?:[A-Za-z0-9-]{0,61}[A-Za-z0-9])?\.)+[A-Za-z]{2,63}$" --color=never \
                 > "${WORK_RESULTS_DIR}/sudomy.txt" || true
           
-              echo "Copied Sudomy results: $(wc -l < "${WORK_RESULTS_DIR}/sudomy.txt" || echo 0)"
+              echo "Copied ${WORK_RESULTS_DIR}/sudomy.txt (lines: $(wc -l < "${WORK_RESULTS_DIR}/sudomy.txt" || echo 0))"
             else
               echo "No Sudomy results found under ${SUDOMY_OUTPUT_BASE}. Creating empty sudomy.txt in workspace"
-              touch "${WORK_RESULTS_DIR}/sudomy.txt" || ( echo "Failed to touch ${WORK_RESULTS_DIR}/sudomy.txt" && ls -la "$(dirname "${WORK_RESULTS_DIR}")" || true )
+              touch "${WORK_RESULTS_DIR}/sudomy.txt"
             fi
           fi
           
           echo "==== Completed hardened Sudomy run ===="
-
-          echo "======= Running Harvester ========="
-          mkdir -p "results/${DOMAIN}"
-          THEHARVEST_JSON="results/${DOMAIN}/theharvester.json"
           
-          theHarvester -d "${DOMAIN}" -b all -f "${THEHARVEST_JSON}" --quiet 
-
-          echo "Filtering the Harvester json file"
-          jq -r '.hosts | map(select(type=="string") | split(":")[0]) | unique[]' "${THEHARVEST_JSON}" \
-            | sed 's/^\*\.//' \
-            | sed 's/^[[:space:]]*//; s/[[:space:]]*$//' \
-            | grep -P "^(?=.{1,253}$)(?:[A-Za-z0-9](?:[A-Za-z0-9-]{0,61}[A-Za-z0-9])?\.)+[A-Za-z]{2,63}$" --color=never \
-            > "results/${DOMAIN}/theHarvester.txt" || true
 
           echo "====== Running assetfinder ===========" 
 
