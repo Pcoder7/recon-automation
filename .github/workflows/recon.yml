@@ -123,7 +123,26 @@ jobs:
           pip3 install --no-cache-dir ipaddress
           
           echo "$HOME/go/bin" >> $GITHUB_PATH
+
+      - name: Ensure Node + phantomjs available
+        shell: bash
+        run: |
           
+          echo "Installing Node (via actions/setup-node is preferred). Falling back to apt if needed."
+          # If running inside GH Actions prefer actions/setup-node; fallback:
+          if ! command -v node >/dev/null 2>&1; then
+            curl -fsSL https://deb.nodesource.com/setup_18.x | bash -
+            apt-get update -y
+            apt-get install -y nodejs
+          fi
+          node --version
+          npm --version
+    
+          # Install phantomjs via npm prebuilt (global)
+          npm install -g --unsafe-perm phantomjs-prebuilt@2.1.16 || true
+          echo "phantomjs path: $(which phantomjs || echo 'not found')"
+          phantomjs --version || echo "phantomjs not available"     
+
       - name: Install and Configure Sudomy
         shell: bash
         run: |
@@ -145,12 +164,18 @@ jobs:
             
             echo "Installing system dependencies..."
             apt-get update
-            apt-get install -y jq nmap phantomjs npm chromium parallel || true
-            npm i -g wappalyzer wscat || true
+            apt-get install -y jq chromium parallel || true
+            
+
+            echo "Node version: $(node --version 2>/dev/null || echo 'node not found')"
+            echo "NPM version: $(npm --version 2>/dev/null || echo 'npm not found')"
+            echo "nmap: $(which nmap || true) $(nmap --version 2>/dev/null | head -n1 || true)"
+            echo "chromium-browser: $(which chromium-browser || true)"
+
             
             # Make sudomy executable
             chmod +x "${SUDOMY_INSTALL_DIR}/sudomy"
-            
+            chown -R "$(whoami)":"$(whoami)" "${SUDOMY_INSTALL_DIR}"
             # Return to original directory
             cd "${ORIGINAL_DIR}"
             echo "Returned to: $(pwd)"
@@ -310,7 +335,11 @@ jobs:
           EXTERNAL_TX="$(mktemp)"
           EXTERNAL_FINAL="${OUTDIR}/external.txt"
           TARGET="${OUTDIR}/all_subdomains.txt"
-
+          WORKSPACE="${GITHUB_WORKSPACE:-$(pwd)}"
+          ORIGINAL_DIR="${ORIGINAL_DIR:-${WORKSPACE}}"
+          WORK_RESULTS_DIR="${WORKSPACE}/results/${DOMAIN}"
+          mkdir -p "${WORK_RESULTS_DIR}"
+          echo "Workspace results dir: ${WORK_RESULTS_DIR}"
           
           echo "==== run interlace ===="
           mkdir -p results/"${DOMAIN}"
@@ -346,50 +375,84 @@ jobs:
           
           echo "Sudomy installation directory: ${SUDOMY_INSTALL_DIR}"
           echo "Sudomy output base directory: ${SUDOMY_OUTPUT_BASE}"
-
-          echo "================== Running Sudomy ==================" 
-          chmod +x "${SUDOMY_INSTALL_DIR}/sudomy"
-          cd "${SUDOMY_INSTALL_DIR}"
-          ./sudomy -d "${DOMAIN}" --no-probe ||true
-          cd "$(pwd)"
           
-          if [ -d "${SUDOMY_OUTPUT_BASE}" ]; then
-            # Get today's date in the format Sudomy uses (MM-DD-YYYY)
-            TODAY=$(date +"%m-%d-%Y")
-            SUDOMY_DOMAIN_DIR="${SUDOMY_OUTPUT_BASE}/${TODAY}/${DOMAIN}"
-            
-            echo "Checking Sudomy output at: ${SUDOMY_DOMAIN_DIR}/subdomains.txt"
-            
-            if [ -f "${SUDOMY_DOMAIN_DIR}/subdomains.txt" ]; then
-              cat "${SUDOMY_DOMAIN_DIR}/subdomains.txt" | sed 's/^\*\.//' | sed 's/^[[:space:]]*//; s/[[:space:]]*$//' \
-              | grep -P "^(?=.{1,253}$)(?:[A-Za-z0-9](?:[A-Za-z0-9-]{0,61}[A-Za-z0-9])?\.)+[A-Za-z]{2,63}$" --color=never >results/"${DOMAIN}"/sudomy.txt || true
-              
-              echo "Sudomy results copied: $(wc -l < results/${DOMAIN}/sudomy.txt) subdomains"
-            else
-              echo "Sudomy subdomains.txt not found at expected location: ${SUDOMY_DOMAIN_DIR}/subdomains.txt"
-              echo "Listing Sudomy output directory structure:"
-              ls -laR "${SUDOMY_OUTPUT_BASE}" 2>/dev/null | head -n 50 || true
-              
-              # Try to find it in any date folder as fallback
-              FOUND_SUDOMY=$(find "${SUDOMY_OUTPUT_BASE}" -type f -path "*/${DOMAIN}/subdomains.txt" -print -quit 2>/dev/null || true)
-              if [ -n "${FOUND_SUDOMY}" ]; then
-                cat "${FOUND_SUDOMY}" | sed 's/^\*\.//' | sed 's/^[[:space:]]*//; s/[[:space:]]*$//' \
-                | grep -P "^(?=.{1,253}$)(?:[A-Za-z0-9](?:[A-Za-z0-9-]{0,61}[A-Za-z0-9])?\.)+[A-Za-z]{2,63}$" --color=never >results/"${DOMAIN}"/sudomy.txt || true
-                
-                echo "Found and copied Sudomy results from: ${FOUND_SUDOMY}"
-                echo "Sudomy subdomains: $(wc -l < results/${DOMAIN}/sudomy.txt)"
-              else
-                echo "No Sudomy results found anywhere in ${SUDOMY_OUTPUT_BASE}"
-                echo "Creating empty sudomy.txt file"
-                touch results/"${DOMAIN}"/sudomy.txt
-              fi
-            fi
+          # Make sure required binaries exist (install if missing)
+          if ! command -v nmap >/dev/null 2>&1; then
+            echo "nmap missing -> attempting install (sudo apt-get)"
+            sudo apt-get update -y
+            sudo apt-get install -y nmap jq nodejs npm || true
+          fi
+          
+          # PhantomJS fallback (best-effort, apt often has no candidate)
+          if ! command -v phantomjs >/dev/null 2>&1; then
+            echo "phantomjs not found; attempting npm install -g phantomjs-prebuilt (best-effort)"
+            sudo npm i -g phantomjs-prebuilt || true
+          fi
+          
+          # Ensure Sudomy repo is present and contains expected files; re-clone if incomplete
+          if [ ! -d "${SUDOMY_INSTALL_DIR}" ] || [ ! -f "${SUDOMY_INSTALL_DIR}/sudomy" ] || [ ! -f "${SUDOMY_INSTALL_DIR}/sudomy.api" ]; then
+            echo "Sudomy appears missing or incomplete at ${SUDOMY_INSTALL_DIR} -> (re)cloning"
+            sudo rm -rf "${SUDOMY_INSTALL_DIR}" || true
+            sudo git clone --recursive https://github.com/screetsec/Sudomy.git "${SUDOMY_INSTALL_DIR}" || true
+            sudo python3 -m pip install -r "${SUDOMY_INSTALL_DIR}/requirements.txt" || true
+            sudo chmod +x "${SUDOMY_INSTALL_DIR}/sudomy" || true
+            sudo mkdir -p "${SUDOMY_OUTPUT_BASE}" || true
+          fi
+          
+          # Short debug listing (keeps logs useful)
+          echo "Listing sudomy directory (top):"
+          ls -la "${SUDOMY_INSTALL_DIR}" | sed -n '1,200p' || true
+          echo "sudomy.api present? $( [ -f "${SUDOMY_INSTALL_DIR}/sudomy.api" ] && echo yes || echo no )"
+          echo "which nmap: $(which nmap || true)"
+          
+          # Run sudomy from its directory, guaranteeing return using pushd/popd
+          pushd "${SUDOMY_INSTALL_DIR}" >/dev/null || ( echo "Failed to enter ${SUDOMY_INSTALL_DIR}" && true )
+          
+          # Prefer direct python invocation if sudomy.api exists (more reliable)
+          if [ -f "./sudomy.api" ]; then
+            echo "Running: python3 ./sudomy.api -d ${DOMAIN} --no-probe"
+            python3 ./sudomy.api -d "${DOMAIN}" --no-probe || true
           else
-            echo "WARNING: Sudomy output directory not found at ${SUDOMY_OUTPUT_BASE}"
-            echo "Listing Sudomy installation directory:"
-            ls -la "${SUDOMY_INSTALL_DIR}" || true
-            touch results/"${DOMAIN}"/sudomy.txt
-          fi          
+            echo "Running: ./sudomy -d ${DOMAIN} --no-probe"
+            chmod +x ./sudomy || true
+            ./sudomy -d "${DOMAIN}" --no-probe || true
+          fi
+          
+          popd >/dev/null || true
+          
+          # Find Sudomy output: today format and fallback search across output dir
+          TODAY=$(date +"%m-%d-%Y")
+          SUDOMY_DOMAIN_DIR="${SUDOMY_OUTPUT_BASE}/${TODAY}/${DOMAIN}"
+          echo "Checking Sudomy output at: ${SUDOMY_DOMAIN_DIR}/subdomains.txt"
+          
+          if [ -f "${SUDOMY_DOMAIN_DIR}/subdomains.txt" ]; then
+            sed 's/^\*\.//' "${SUDOMY_DOMAIN_DIR}/subdomains.txt" \
+              | sed 's/^[[:space:]]*//; s/[[:space:]]*$//' \
+              | grep -P "^(?=.{1,253}$)(?:[A-Za-z0-9](?:[A-Za-z0-9-]{0,61}[A-Za-z0-9])?\.)+[A-Za-z]{2,63}$" --color=never \
+              > "${WORK_RESULTS_DIR}/sudomy.txt" || true
+          
+            echo "Sudomy results copied to workspace: $(wc -l < "${WORK_RESULTS_DIR}/sudomy.txt" || echo 0) subdomains"
+          else
+            echo "Sudomy subdomains.txt not found at expected path"
+            echo "Listing ${SUDOMY_OUTPUT_BASE} top-level (short):"
+            ls -la "${SUDOMY_OUTPUT_BASE}" 2>/dev/null | sed -n '1,200p' || true
+          
+            FOUND_SUDOMY=$(find "${SUDOMY_OUTPUT_BASE}" -type f -path "*/${DOMAIN}/subdomains.txt" -print -quit 2>/dev/null || true)
+            if [ -n "${FOUND_SUDOMY}" ]; then
+              echo "Found Sudomy output at: ${FOUND_SUDOMY} -> copying"
+              sed 's/^\*\.//' "${FOUND_SUDOMY}" \
+                | sed 's/^[[:space:]]*//; s/[[:space:]]*$//' \
+                | grep -P "^(?=.{1,253}$)(?:[A-Za-z0-9](?:[A-Za-z0-9-]{0,61}[A-Za-z0-9])?\.)+[A-Za-z]{2,63}$" --color=never \
+                > "${WORK_RESULTS_DIR}/sudomy.txt" || true
+          
+              echo "Copied Sudomy results: $(wc -l < "${WORK_RESULTS_DIR}/sudomy.txt" || echo 0)"
+            else
+              echo "No Sudomy results found under ${SUDOMY_OUTPUT_BASE}. Creating empty sudomy.txt in workspace"
+              touch "${WORK_RESULTS_DIR}/sudomy.txt" || ( echo "Failed to touch ${WORK_RESULTS_DIR}/sudomy.txt" && ls -la "$(dirname "${WORK_RESULTS_DIR}")" || true )
+            fi
+          fi
+          
+          echo "==== Completed hardened Sudomy run ===="
 
           echo "======= Running Harvester ========="
           mkdir -p "results/${DOMAIN}"
