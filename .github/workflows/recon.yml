@@ -350,6 +350,9 @@ jobs:
           
           echo "Sudomy installation directory: ${SUDOMY_INSTALL_DIR}"
           echo "Sudomy output base directory: ${SUDOMY_OUTPUT_BASE}"
+
+          echo "================== Running Sudomy ==================" 
+          /opt/Sudomy/sudomy -d "${DOMAIN}" --no-probe
           
           if [ -d "${SUDOMY_OUTPUT_BASE}" ]; then
             # Get today's date in the format Sudomy uses (MM-DD-YYYY)
