@@ -441,7 +441,6 @@ jobs:
             cat results/"${DOMAIN}"/subfinder.txt \
               results/"${DOMAIN}"/assetfinder.txt \
               results/"${DOMAIN}"/amass.txt \
-              results/"${DOMAIN}"/sudomy.txt \
               results/"${DOMAIN}"/shrewdeye.txt \
               results/"${DOMAIN}"/findomain.txt \
               "$ONEFORALL_TXT" 2>/dev/null \
@@ -540,11 +539,11 @@ jobs:
           echo "  BBOT:      ${BBOT_FILE} (exists: $( [ -f "${BBOT_FILE}" ] && echo yes || echo no ))"
 
           if [ -f "${INTERLACE_FILE}" ] && [ -f "${BBOT_FILE}" ]; then
-            cat "${INTERLACE_FILE}" "${BBOT_FILE}" "$OUTDIR/chaos.txt" "results/${DOMAIN}/assetfinder.txt" "results/${DOMAIN}/theHarvester.txt" "$EXTERNAL_FINAL"  | sort -u > "${OUT_FILE}"
+            cat "${INTERLACE_FILE}" "${BBOT_FILE}" "$OUTDIR/chaos.txt" "results/${DOMAIN}/assetfinder.txt" "results/${DOMAIN}/theHarvester.txt" "results/${DOMAIN}/sudomy.txt" "$EXTERNAL_FINAL" | sort -u > "${OUT_FILE}"
           elif [ -f "${INTERLACE_FILE}" ]; then
             sort -u "${INTERLACE_FILE}" > "${OUT_FILE}"
           elif [ -f "${BBOT_FILE}" ]; then
-            sort -u "${BBOT_FILE}" "$OUTDIR/chaos.txt" "results/${DOMAIN}/assetfinder.txt" "results/${DOMAIN}/theHarvester.txt" "$EXTERNAL_FINAL" > "${OUT_FILE}"
+            sort -u "${BBOT_FILE}" "$OUTDIR/chaos.txt" "results/${DOMAIN}/assetfinder.txt" "results/${DOMAIN}/theHarvester.txt" "results/${DOMAIN}/sudomy.txt" "$EXTERNAL_FINAL" > "${OUT_FILE}"
           else
             echo "# no subdomains found from interlace or bbot" > "${OUT_FILE}"
           fi
