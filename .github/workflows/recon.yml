@@ -301,6 +301,7 @@ jobs:
             echo "bbot not found in PATH. Ensure container contains bbot or adjust PATH."
           fi
 
+
           TMP_ONEFOR="$(mktemp)"
           SUDOMY_INSTALL_DIR="/opt/sudomy"
           OUTDIR="results/${{ matrix.domain }}"
@@ -347,8 +348,8 @@ jobs:
           echo "Sudomy output base directory: ${SUDOMY_OUTPUT_BASE}"
 
           echo "================== Running Sudomy ==================" 
-          chmod +x "SUDOMY_INSTALL_DIR"/sudomy
-          cd "SUDOMY_INSTALL_DIR"
+          chmod +x "${SUDOMY_INSTALL_DIR}"/sudomy
+          cd "${SUDOMY_INSTALL_DIR}"
           "SUDOMY_INSTALL_DIR"/sudomy -d "${DOMAIN}" --no-probe ||true
           cd "$(pwd)"
           
