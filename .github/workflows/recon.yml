@@ -419,7 +419,7 @@ jobs:
           DOMAIN="${DOMAIN:?DOMAIN must be set}"
           WORK_RESULTS_DIR="${WORKSPACE}/results/${DOMAIN}"
           mkdir -p "${WORK_RESULTS_DIR}"
-          echo "Workspace results dir: ${WORK_RESULTS_DIR}
+          echo "Workspace results dir: ${WORK_RESULTS_DIR}"
           
           # Put Sudomy into workspace (avoid /opt to prevent permission/partial-install issues)
           SUDOMY_DIR="${WORKSPACE}/sudomy"
