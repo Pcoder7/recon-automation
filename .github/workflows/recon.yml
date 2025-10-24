@@ -199,52 +199,6 @@ jobs:
           # Store the installation path for later use
           echo "SUDOMY_INSTALL_DIR=${SUDOMY_INSTALL_DIR}" >> $GITHUB_ENV
 
-      - name: Install and Configure theHarvester (pipx method)
-        shell: bash
-        run: |
-          echo "==== Installing theHarvester with pipx ===="
-          
-          # Store current directory
-          ORIGINAL_DIR=$(pwd)
-          echo "Current directory: ${ORIGINAL_DIR}"
-          
-          # Install Python 3.12 if not available
-          apt-get update
-          apt-get install -y python3.12 python3.12-venv pipx
-          
-          # Ensure pipx is in PATH
-          pipx ensurepath
-          export PATH="$HOME/.local/bin:$PATH"
-          
-          # Define installation directory
-          THEHARVESTER_INSTALL_DIR="/opt/theHarvester"
-          
-          if [ ! -d "${THEHARVESTER_INSTALL_DIR}" ]; then
-            echo "Cloning theHarvester repository..."
-            git clone https://github.com/laramies/theHarvester "${THEHARVESTER_INSTALL_DIR}"
-            
-            cd "${THEHARVESTER_INSTALL_DIR}"
-            
-            echo "Installing theHarvester with pipx..."
-            # Install theHarvester using pipx
-            pipx install --python python3.12 .
-            
-            # Return to original directory
-            cd "${ORIGINAL_DIR}"
-            echo "Returned to: $(pwd)"
-            
-            echo "theHarvester installed successfully"
-          else
-            echo "theHarvester already installed at: ${THEHARVESTER_INSTALL_DIR}"
-          fi
-          
-          # Verify installation
-          echo "==== Verifying theHarvester Installation ===="
-          which theHarvester || echo "theHarvester not found in PATH"
-          theHarvester -h | head -n 5 || echo "theHarvester verification failed"
-          
-          # Store the installation path for later use
-          echo "THEHARVESTER_INSTALL_DIR=${THEHARVESTER_INSTALL_DIR}" >> $GITHUB_ENV  
 
       - name: Install and Configure theHarvester
         shell: bash
