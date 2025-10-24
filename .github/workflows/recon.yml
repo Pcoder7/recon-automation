@@ -350,7 +350,9 @@ jobs:
 
           echo "================== Running Sudomy ==================" 
           chmod +x "SUDOMY_INSTALL_DIR"/sudomy
+          cd "SUDOMY_INSTALL_DIR"
           "SUDOMY_INSTALL_DIR"/sudomy -d "${DOMAIN}" --no-probe ||true
+          cd "$(pwd)"
           
           if [ -d "${SUDOMY_OUTPUT_BASE}" ]; then
             # Get today's date in the format Sudomy uses (MM-DD-YYYY)
