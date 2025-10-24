@@ -20,7 +20,6 @@ jobs:
       - name: Checkout Repository
         uses: actions/checkout@v3
         with:
-          # Fetch full Git history so previous commits are available for comparison
           fetch-depth: 0        
 
       - name: Generate Matrix from domains.txt
@@ -50,7 +49,7 @@ jobs:
         domain: ${{ fromJson(needs.generate_matrix.outputs.matrix) }}
     steps:
       - name: Checkout Repository
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
         with:
           # Fetch full Git history so previous commits are available for comparison
           fetch-depth: 0   
@@ -108,11 +107,7 @@ jobs:
           
           # Installing Chaos-client
           if ! command -v chaos >/dev/null; then
-            echo "Installing Chaos…"
-            go install -v github.com/projectdiscovery/chaos-client/cmd/chaos@latest
-          else
-            echo "Chaos already in installed"
-          fi    
+
           
           if ! command -v anew >/dev/null; then
             echo "Installing anew…"
@@ -153,7 +148,8 @@ jobs:
             
             echo "Installing system dependencies..."
             apt-get update
-            apt-get install -y jq parallel
+            apt-get install -y jq nmap phantomjs npm chromium parallel || true
+            npm i -g wappalyzer wscat || true
             
             # Make sudomy executable
             chmod +x "${SUDOMY_INSTALL_DIR}/sudomy"
@@ -192,7 +188,7 @@ jobs:
             echo "WARNING: Output directory not found, creating it..."
             mkdir -p "${SUDOMY_INSTALL_DIR}/output"
           fi
-          
+          ls -la "${SUDOMY_INSTALL_DIR}" || true
           # Store the installation path for later use
           echo "SUDOMY_INSTALL_DIR=${SUDOMY_INSTALL_DIR}" >> $GITHUB_ENV
 
@@ -308,6 +304,7 @@ jobs:
           fi
 
           TMP_ONEFOR="$(mktemp)"
+          SUDOMY_INSTALL_DIR="/opt/sudomy"
           OUTDIR="results/${{ matrix.domain }}"
           JSONFILE="${OUTDIR}/oneforall.json"
           ONEFORALL_TXT="${OUTDIR}/oneforall.txt"
@@ -352,8 +349,8 @@ jobs:
           echo "Sudomy output base directory: ${SUDOMY_OUTPUT_BASE}"
 
           echo "================== Running Sudomy ==================" 
-          chmod +x /opt/sudomy/sudomy
-          /opt/sudomy/sudomy -d "${DOMAIN}" --no-probe ||true
+          chmod +x "SUDOMY_INSTALL_DIR"/sudomy
+          "SUDOMY_INSTALL_DIR"/sudomy -d "${DOMAIN}" --no-probe ||true
           
           if [ -d "${SUDOMY_OUTPUT_BASE}" ]; then
             # Get today's date in the format Sudomy uses (MM-DD-YYYY)
