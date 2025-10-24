@@ -153,7 +153,7 @@ jobs:
             
             echo "Installing system dependencies..."
             apt-get update
-            apt-get install -y jq nmap phantomjs npm chromium parallel
+            apt-get install -y jq parallel
             
             echo "Installing npm packages..."
             npm i -g wappalyzer wscat
