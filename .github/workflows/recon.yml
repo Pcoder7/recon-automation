@@ -285,6 +285,7 @@ jobs:
 cd /opt/theHarvester
 uv run theHarvester "$@"
 EOF
+
             
             chmod +x /usr/local/bin/theHarvester
             
