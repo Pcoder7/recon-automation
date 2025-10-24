@@ -155,8 +155,6 @@ jobs:
             apt-get update
             apt-get install -y jq parallel
             
-            
-            
             # Make sudomy executable
             chmod +x "${SUDOMY_INSTALL_DIR}/sudomy"
             
@@ -216,8 +214,20 @@ jobs:
             # Install UV (modern Python package manager recommended by theHarvester)
             curl -LsSf https://astral.sh/uv/install.sh | sh
             
-            # Add UV to PATH for current session
-            export PATH="$HOME/.cargo/bin:$PATH"
+            # Source the environment file created by UV installer
+            if [ -f "$HOME/.cargo/env" ]; then
+              source $HOME/.cargo/env
+              echo "UV environment sourced from $HOME/.cargo/env"
+            else
+              # Fallback: add to PATH manually
+              export PATH="$HOME/.cargo/bin:$PATH"
+              echo "UV added to PATH manually"
+            fi
+            
+            # Verify UV is available
+            echo "Checking UV installation..."
+            which uv || echo "UV not found in PATH"
+            uv --version || echo "UV command failed"
             
             echo "Cloning theHarvester repository..."
             git clone https://github.com/laramies/theHarvester "${THEHARVESTER_INSTALL_DIR}"
