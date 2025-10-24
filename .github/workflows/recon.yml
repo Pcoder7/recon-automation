@@ -215,12 +215,12 @@ jobs:
             curl -LsSf https://astral.sh/uv/install.sh | sh
             
             # Source the environment file created by UV installer
-            if [ -f "$HOME/.cargo/env" ]; then
-              source $HOME/.cargo/env
-              echo "UV environment sourced from $HOME/.cargo/env"
+            if [ -f "$HOME/.local/bin/env" ]; then
+              source $HOME/.local/bin/env
+              echo "UV environment sourced from $HOME/.local/bin/env"
             else
               # Fallback: add to PATH manually
-              export PATH="$HOME/.cargo/bin:$PATH"
+              export PATH="$HOME/.local/bin:$PATH"
               echo "UV added to PATH manually"
             fi
             
@@ -246,6 +246,7 @@ jobs:
             
             cat > /usr/local/bin/theHarvester << 'EOF'
           #!/bin/bash
+          export PATH="$HOME/.local/bin:$PATH"
           cd /opt/theHarvester
           uv run theHarvester "$@"
           EOF
