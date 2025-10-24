@@ -329,7 +329,7 @@ jobs:
           mkdir -p "$OUTDIR"
           REMOTE_URL="https://raw.githubusercontent.com/rix4uni/BugBountyData/refs/heads/main/data/${{ matrix.domain }}.txt"
           if curl -fsSL "$REMOTE_URL" -o "$EXTERNAL_TX"; then
-            sed -E "s#^https?://##I; s/^[*.]+//; s/[.]+$//; s/^[[:space:]]+//; s/[[:space:]]+$//" "$EXTERNAL_TX" \
+            sed -E "s#^https?://##I; s/^[*.]+//; s/[.]+$//; s/^[[:space:]]+//; s/[[:space:]]+$//" "$EXTERNAL_TX" | grep -P "^(?=.{1,253}$)(?:[A-Za-z0-9](?:[A-Za-z0-9-]{0,61}[A-Za-z0-9])?\.)+[A-Za-z]{2,63}$" --color=never \
               | sort -u > "$EXTERNAL_FINAL" || true
           else
             : > "$EXTERNAL_FINAL"
@@ -436,8 +436,6 @@ jobs:
           chmod 644 "$ONEFORALL_TXT"
           echo "oneforall lines: $(wc -l < "$ONEFORALL_TXT")"
 
-          
-          
           # merge interlace outputs if present
           if [ -f results/"${DOMAIN}"/subfinder.txt ] || [ -f results/"${DOMAIN}"/assetfinder.txt ] || [ -f results/"${DOMAIN}"/amass.txt ]; then
             cat results/"${DOMAIN}"/subfinder.txt \
@@ -553,6 +551,8 @@ jobs:
           echo "Final all_subdomains.txt lines: $(wc -l < "${OUT_FILE}" || echo 0)"
           echo "Final listing results/${DOMAIN}:"
           ls -la results/"${DOMAIN}" || true
+          rm "results/${DOMAIN}/oneforall.json" 
+          rm -r "results/${DOMAIN}/bbot-output"
 
       - name: Upload all results for ${{ matrix.domain }}
         uses: actions/upload-artifact@v4
