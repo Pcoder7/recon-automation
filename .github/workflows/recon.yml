@@ -245,6 +245,7 @@ jobs:
           export PATH="$HOME/.local/bin:$PATH"
           cd /opt/theHarvester
           uv run theHarvester "$@"
+          cd ../..
           EOF
             
             chmod +x /usr/local/bin/theHarvester
@@ -393,10 +394,10 @@ jobs:
           fi          
 
           echo "======= Running Harvester ========="
-          mkdir -p results/"${DOMAIN}"
+          mkdir -p "results/${DOMAIN}"
           THEHARVEST_JSON="results/${DOMAIN}/theharvester.json"
           
-          theHarvester -d "${DOMAIN}" -b all -f "${THEHARVEST_JSON}" --quiet > /dev/null 2>&1
+          theHarvester -d "${DOMAIN}" -b all -f "${THEHARVEST_JSON}" --quiet 
 
           echo "Filtering the Harvester json file"
           jq -r '.hosts | map(select(type=="string") | split(":")[0]) | unique[]' "${THEHARVEST_JSON}" \
