@@ -280,12 +280,12 @@ jobs:
             echo "Returned to: $(pwd)"
             
             # Create a wrapper script to run theHarvester easily
-            cat > /usr/local/bin/theHarvester <<'EOF'
-#!/bin/bash
-cd /opt/theHarvester
-uv run theHarvester "$@"
-EOF
-
+            
+            cat > /usr/local/bin/theHarvester << 'EOF'
+          #!/bin/bash
+          cd /opt/theHarvester
+          uv run theHarvester "$@"
+          EOF
             
             chmod +x /usr/local/bin/theHarvester
             
