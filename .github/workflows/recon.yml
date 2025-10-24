@@ -303,7 +303,7 @@ jobs:
 
 
           TMP_ONEFOR="$(mktemp)"
-          SUDOMY_INSTALL_DIR="/opt/sudomy"
+          
           OUTDIR="results/${{ matrix.domain }}"
           JSONFILE="${OUTDIR}/oneforall.json"
           ONEFORALL_TXT="${OUTDIR}/oneforall.txt"
@@ -348,9 +348,9 @@ jobs:
           echo "Sudomy output base directory: ${SUDOMY_OUTPUT_BASE}"
 
           echo "================== Running Sudomy ==================" 
-          chmod +x "${SUDOMY_INSTALL_DIR}"/sudomy
+          chmod +x "${SUDOMY_INSTALL_DIR}/sudomy"
           cd "${SUDOMY_INSTALL_DIR}"
-          "${SUDOMY_INSTALL_DIR}"/sudomy -d "${DOMAIN}" --no-probe ||true
+          ./sudomy -d "${DOMAIN}" --no-probe ||true
           cd "$(pwd)"
           
           if [ -d "${SUDOMY_OUTPUT_BASE}" ]; then
