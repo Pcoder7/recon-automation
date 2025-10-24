@@ -386,11 +386,13 @@ jobs:
           fi          
 
           echo "======= Running Harvester ========="
-
-          theHarvester -d "${DOMAIN}" -b all -f "${DOMAIN}.json" --quiet > /dev/null 2>&1
+          mkdir -p results/"${DOMAIN}"
+          THEHARVEST_JSON="results/${DOMAIN}/theharvester.json"
+          
+          theHarvester -d "${DOMAIN}" -b all -f "${THEHARVEST_JSON}" --quiet > /dev/null 2>&1
 
           echo "Filtering the Harvester json file"
-          jq -r '.hosts | map(select(type=="string") | split(":")[0]) | unique[]' "${DOMAIN}.json" \
+          jq -r '.hosts | map(select(type=="string") | split(":")[0]) | unique[]' "${THEHARVEST_JSON}" \
             | sed 's/^\*\.//' \
             | sed 's/^[[:space:]]*//; s/[[:space:]]*$//' \
             | grep -P "^(?=.{1,253}$)(?:[A-Za-z0-9](?:[A-Za-z0-9-]{0,61}[A-Za-z0-9])?\.)+[A-Za-z]{2,63}$" --color=never \
@@ -413,7 +415,7 @@ jobs:
             # print length only (safe)
             echo "PDCP_KEY present, length=$(printf '%s' "$PDCP_KEY" | wc -c)"
           fi
-          chaos -d "${{ matrix.domain }}" -o "$OUTDIR/chaos.txt" -key "${PDCP_KEY}" -silent || true
+          chaos -d "${{ matrix.domain }}" -o "$OUTDIR/chaos.txt" -key "${PDCP_KEY}" -silent | sed 's/^\*\.//' | sed 's/^[[:space:]]*//; s/[[:space:]]*$//' | grep -P "^(?=.{1,253}$)(?:[A-Za-z0-9](?:[A-Za-z0-9-]{0,61}[A-Za-z0-9])?\.)+[A-Za-z]{2,63}$" --color=never || true
 
           # --- oneforall: extract subdomain entries (fixed jq usage) ---
           echo "====== Collect OneForAll results ===========" 
