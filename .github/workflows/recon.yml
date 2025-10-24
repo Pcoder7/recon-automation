@@ -106,6 +106,13 @@ jobs:
             echo "Chaos already in installed"
           fi    
           
+          # Installing Chaos-client
+          if ! command -v chaos >/dev/null; then
+            echo "Installing Chaos…"
+            go install -v github.com/projectdiscovery/chaos-client/cmd/chaos@latest
+          else
+            echo "Chaos already in installed"
+          fi    
           
           if ! command -v anew >/dev/null; then
             echo "Installing anew…"
@@ -125,7 +132,120 @@ jobs:
           
           echo "$HOME/go/bin" >> $GITHUB_PATH
           
-  
+      - name: Install and Configure Sudomy
+        shell: bash
+        run: |
+          echo "==== Installing Sudomy ===="
+          
+          # Store current directory
+          ORIGINAL_DIR=$(pwd)
+          echo "Current directory: ${ORIGINAL_DIR}"
+          
+          # Clone Sudomy to a known location
+          SUDOMY_INSTALL_DIR="/opt/sudomy"
+          
+          if [ ! -d "${SUDOMY_INSTALL_DIR}" ]; then
+            git clone --recursive https://github.com/screetsec/Sudomy.git "${SUDOMY_INSTALL_DIR}"
+            cd "${SUDOMY_INSTALL_DIR}"
+            
+            echo "Installing Python requirements..."
+            python3 -m pip install -r requirements.txt
+            
+            echo "Installing system dependencies..."
+            apt-get update
+            apt-get install -y jq nmap phantomjs npm chromium parallel
+            
+            echo "Installing npm packages..."
+            npm i -g wappalyzer wscat
+            
+            # Make sudomy executable
+            chmod +x "${SUDOMY_INSTALL_DIR}/sudomy"
+            
+            # Return to original directory
+            cd "${ORIGINAL_DIR}"
+            echo "Returned to: $(pwd)"
+            
+            # Add to PATH
+            echo "${SUDOMY_INSTALL_DIR}" >> $GITHUB_PATH
+            
+            # Create output directory if it doesn't exist
+            mkdir -p "${SUDOMY_INSTALL_DIR}/output"
+            
+            echo "Sudomy installed successfully at: ${SUDOMY_INSTALL_DIR}"
+          else
+            echo "Sudomy already installed at: ${SUDOMY_INSTALL_DIR}"
+          fi
+          
+          # Verify installation (from original directory)
+          echo "==== Verifying Sudomy Installation ===="
+          echo "Current working directory: $(pwd)"
+          ls -la "${SUDOMY_INSTALL_DIR}" || true
+          
+          if [ -f "${SUDOMY_INSTALL_DIR}/sudomy" ]; then
+            echo "Sudomy executable found"
+            echo "Sudomy location: ${SUDOMY_INSTALL_DIR}/sudomy"
+          else
+            echo "WARNING: Sudomy executable not found!"
+          fi
+          
+          # Check if output directory exists
+          if [ -d "${SUDOMY_INSTALL_DIR}/output" ]; then
+            echo "Sudomy output directory confirmed at: ${SUDOMY_INSTALL_DIR}/output"
+          else
+            echo "WARNING: Output directory not found, creating it..."
+            mkdir -p "${SUDOMY_INSTALL_DIR}/output"
+          fi
+          
+          # Store the installation path for later use
+          echo "SUDOMY_INSTALL_DIR=${SUDOMY_INSTALL_DIR}" >> $GITHUB_ENV
+
+      - name: Install and Configure theHarvester (pipx method)
+        shell: bash
+        run: |
+          echo "==== Installing theHarvester with pipx ===="
+          
+          # Store current directory
+          ORIGINAL_DIR=$(pwd)
+          echo "Current directory: ${ORIGINAL_DIR}"
+          
+          # Install Python 3.12 if not available
+          apt-get update
+          apt-get install -y python3.12 python3.12-venv pipx
+          
+          # Ensure pipx is in PATH
+          pipx ensurepath
+          export PATH="$HOME/.local/bin:$PATH"
+          
+          # Define installation directory
+          THEHARVESTER_INSTALL_DIR="/opt/theHarvester"
+          
+          if [ ! -d "${THEHARVESTER_INSTALL_DIR}" ]; then
+            echo "Cloning theHarvester repository..."
+            git clone https://github.com/laramies/theHarvester "${THEHARVESTER_INSTALL_DIR}"
+            
+            cd "${THEHARVESTER_INSTALL_DIR}"
+            
+            echo "Installing theHarvester with pipx..."
+            # Install theHarvester using pipx
+            pipx install --python python3.12 .
+            
+            # Return to original directory
+            cd "${ORIGINAL_DIR}"
+            echo "Returned to: $(pwd)"
+            
+            echo "theHarvester installed successfully"
+          else
+            echo "theHarvester already installed at: ${THEHARVESTER_INSTALL_DIR}"
+          fi
+          
+          # Verify installation
+          echo "==== Verifying theHarvester Installation ===="
+          which theHarvester || echo "theHarvester not found in PATH"
+          theHarvester -h | head -n 5 || echo "theHarvester verification failed"
+          
+          # Store the installation path for later use
+          echo "THEHARVESTER_INSTALL_DIR=${THEHARVESTER_INSTALL_DIR}" >> $GITHUB_ENV  
+    
       - name: Install interlace tool
         shell: bash
         run: |
@@ -142,6 +262,7 @@ jobs:
         env:
           DOMAIN: ${{ matrix.domain }}
         run: |
+
           
           echo "==== ENV ===="
           echo "PWD: $(pwd)"
@@ -149,6 +270,7 @@ jobs:
           echo "HOME: $HOME"
           echo "DOMAIN: ${DOMAIN}"
           echo "==== CHECK BBOT ===="
+          
           if command -v bbot >/dev/null 2>&1; then
             echo "bbot -> $(which bbot)"
             bbot --version || true
@@ -156,6 +278,15 @@ jobs:
             echo "bbot not found in PATH. Ensure container contains bbot or adjust PATH."
           fi
 
+          TMP_ONEFOR="$(mktemp)"
+          OUTDIR="results/${{ matrix.domain }}"
+          JSONFILE="${OUTDIR}/oneforall.json"
+          ONEFORALL_TXT="${OUTDIR}/oneforall.txt"
+          EXTERNAL_TX="$(mktemp)"
+          EXTERNAL_FINAL="${OUTDIR}/external.txt"
+          TARGET="${OUTDIR}/all_subdomains.txt"
+
+          
           echo "==== run interlace ===="
           mkdir -p results/"${DOMAIN}"
           interlace \
@@ -168,14 +299,126 @@ jobs:
           echo "interlace outputs:"
           ls -la results/"${DOMAIN}" || true
 
+          # --- External: download and normalize (fixed sed input) ---
+          mkdir -p "$OUTDIR"
+          REMOTE_URL="https://raw.githubusercontent.com/rix4uni/BugBountyData/refs/heads/main/data/${{ matrix.domain }}.txt"
+          if curl -fsSL "$REMOTE_URL" -o "$EXTERNAL_TX"; then
+            sed -E "s#^https?://##I; s/^[*.]+//; s/[.]+$//; s/^[[:space:]]+//; s/[[:space:]]+$//" "$EXTERNAL_TX" \
+              | sort -u > "$EXTERNAL_FINAL" || true
+          else
+            : > "$EXTERNAL_FINAL"
+          fi
+          
+          rm -f "$EXTERNAL_TX"
+          echo "external lines: $(wc -l < "$EXTERNAL_FINAL")"        
+
+          
+          echo "==== Collecting Sudomy results ===="
+          
+          # Use the environment variable set during installation
+          SUDOMY_INSTALL_DIR="${SUDOMY_INSTALL_DIR:-/opt/sudomy}"
+          SUDOMY_OUTPUT_BASE="${SUDOMY_INSTALL_DIR}/output"
+          
+          echo "Sudomy installation directory: ${SUDOMY_INSTALL_DIR}"
+          echo "Sudomy output base directory: ${SUDOMY_OUTPUT_BASE}"
+          
+          if [ -d "${SUDOMY_OUTPUT_BASE}" ]; then
+            # Get today's date in the format Sudomy uses (MM-DD-YYYY)
+            TODAY=$(date +"%m-%d-%Y")
+            SUDOMY_DOMAIN_DIR="${SUDOMY_OUTPUT_BASE}/${TODAY}/${DOMAIN}"
+            
+            echo "Checking Sudomy output at: ${SUDOMY_DOMAIN_DIR}/subdomains.txt"
+            
+            if [ -f "${SUDOMY_DOMAIN_DIR}/subdomains.txt" ]; then
+              cp "${SUDOMY_DOMAIN_DIR}/subdomains.txt" results/"${DOMAIN}"/sudomy.txt
+              echo "Sudomy results copied: $(wc -l < results/${DOMAIN}/sudomy.txt) subdomains"
+            else
+              echo "Sudomy subdomains.txt not found at expected location: ${SUDOMY_DOMAIN_DIR}/subdomains.txt"
+              echo "Listing Sudomy output directory structure:"
+              ls -laR "${SUDOMY_OUTPUT_BASE}" 2>/dev/null | head -n 50 || true
+              
+              # Try to find it in any date folder as fallback
+              FOUND_SUDOMY=$(find "${SUDOMY_OUTPUT_BASE}" -type f -path "*/${DOMAIN}/subdomains.txt" -print -quit 2>/dev/null || true)
+              if [ -n "${FOUND_SUDOMY}" ]; then
+                cp "${FOUND_SUDOMY}" results/"${DOMAIN}"/sudomy.txt
+                echo "Found and copied Sudomy results from: ${FOUND_SUDOMY}"
+                echo "Sudomy subdomains: $(wc -l < results/${DOMAIN}/sudomy.txt)"
+              else
+                echo "No Sudomy results found anywhere in ${SUDOMY_OUTPUT_BASE}"
+                echo "Creating empty sudomy.txt file"
+                touch results/"${DOMAIN}"/sudomy.txt
+              fi
+            fi
+          else
+            echo "WARNING: Sudomy output directory not found at ${SUDOMY_OUTPUT_BASE}"
+            echo "Listing Sudomy installation directory:"
+            ls -la "${SUDOMY_INSTALL_DIR}" || true
+            touch results/"${DOMAIN}"/sudomy.txt
+          fi          
+
+          echo "======= Running Harvester ========="
+
+          theHarvester -d "${DOMAIN}" -b all -f "${DOMAIN}.json" --quiet > /dev/null 2>&1
+
+          echo "Filtering the Harvester json file"
+          jq -r '.hosts | map(select(type=="string") | split(":")[0]) | unique[]' "${DOMAIN}.json" \
+            | sed 's/^\*\.//' \
+            | sed 's/^[[:space:]]*//; s/[[:space:]]*$//' \
+            | grep -P "^(?=.{1,253}$)(?:[A-Za-z0-9](?:[A-Za-z0-9-]{0,61}[A-Za-z0-9])?\.)+[A-Za-z]{2,63}$" --color=never \
+            > "results/${DOMAIN}/theHarvester.txt" || true
+
+          echo "====== Running assetfinder ===========" 
+
+          assetfinder --subs-only "${DOMAIN}" \
+            | sed 's/^\*\.//' \
+            | sed 's/^[[:space:]]*//; s/[[:space:]]*$//' \
+            | grep -P "^(?=.{1,253}$)(?:[A-Za-z0-9](?:[A-Za-z0-9-]{0,61}[A-Za-z0-9])?\.)+[A-Za-z]{2,63}$" --color=never \
+            > "results/${DOMAIN}/assetfinder.txt" || true   
+
+          echo "===== Running Chaos Projectdiscovery =========== "
+
+          echo "Debug: check PDCP_KEY is present (length only)"
+          if [ -z "${PDCP_KEY:-}" ]; then
+            echo "PDCP_KEY is MISSING in this environment"
+          else
+            # print length only (safe)
+            echo "PDCP_KEY present, length=$(printf '%s' "$PDCP_KEY" | wc -c)"
+          fi
+          chaos -d "${{ matrix.domain }}" -o "$OUTDIR/chaos.txt" -key "${PDCP_KEY}" -silent || true
+
+          # --- oneforall: extract subdomain entries (fixed jq usage) ---
+          echo "====== Collect OneForAll results ===========" 
+          if [[ -s "$JSONFILE" ]]; then
+            jq -r '.. | objects | .subdomain? // empty' "$JSONFILE" \
+              | sed -E "s#^https?://##I; s/^[*.]+//; s/[.]+$//; s/^[[:space:]]+//; s/[[:space:]]+$//" \
+              | grep -E '^[a-z0-9]([a-z0-9-]*\.)+[a-z]{2,}$' --color=never \
+              | sort -u > "$TMP_ONEFOR" || true
+          else
+            : > "$TMP_ONEFOR"
+          fi
+          mv -f "$TMP_ONEFOR" "$ONEFORALL_TXT"
+          chmod 644 "$ONEFORALL_TXT"
+          echo "oneforall lines: $(wc -l < "$ONEFORALL_TXT")"
+
+          
+          
           # merge interlace outputs if present
           if [ -f results/"${DOMAIN}"/subfinder.txt ] || [ -f results/"${DOMAIN}"/assetfinder.txt ] || [ -f results/"${DOMAIN}"/amass.txt ]; then
-            cat results/"${DOMAIN}"/subfinder.txt results/"${DOMAIN}"/assetfinder.txt results/"${DOMAIN}"/amass.txt 2>/dev/null | inscope --scope .scope | sort -u > results/"${DOMAIN}"/all_subdomains_interlace.txt || true
+            cat results/"${DOMAIN}"/subfinder.txt \
+              results/"${DOMAIN}"/assetfinder.txt \
+              results/"${DOMAIN}"/amass.txt \
+              results/"${DOMAIN}"/sudomy.txt \
+              results/"${DOMAIN}"/shrewdeye.txt \
+              results/"${DOMAIN}"/findomain.txt \
+              "$ONEFORALL_TXT" 2>/dev/null \
+              | inscope --scope .scope \
+              | sort -u > results/"${DOMAIN}"/all_subdomains_interlace.txt || true             
+            
             echo "all_subdomains_interlace.txt lines: $(wc -l < results/${DOMAIN}/all_subdomains_interlace.txt || echo 0)"
           else
             echo "No known interlace subdomain files found to combine."
           fi
-
+           
           echo "==== run BBOT (passive subdomain-enum) ===="
           mkdir -p results/"${DOMAIN}"/bbot-output
           chmod -R u+rwX results/"${DOMAIN}"
@@ -263,11 +506,11 @@ jobs:
           echo "  BBOT:      ${BBOT_FILE} (exists: $( [ -f "${BBOT_FILE}" ] && echo yes || echo no ))"
 
           if [ -f "${INTERLACE_FILE}" ] && [ -f "${BBOT_FILE}" ]; then
-            cat "${INTERLACE_FILE}" "${BBOT_FILE}" | sort -u > "${OUT_FILE}"
+            cat "${INTERLACE_FILE}" "${BBOT_FILE}" "$OUTDIR/chaos.txt" "results/${DOMAIN}/assetfinder.txt" "results/${DOMAIN}/theHarvester.txt" "$EXTERNAL_FINAL"  | sort -u > "${OUT_FILE}"
           elif [ -f "${INTERLACE_FILE}" ]; then
             sort -u "${INTERLACE_FILE}" > "${OUT_FILE}"
           elif [ -f "${BBOT_FILE}" ]; then
-            sort -u "${BBOT_FILE}" > "${OUT_FILE}"
+            sort -u "${BBOT_FILE}" "$OUTDIR/chaos.txt" "results/${DOMAIN}/assetfinder.txt" "results/${DOMAIN}/theHarvester.txt" "$EXTERNAL_FINAL" > "${OUT_FILE}"
           else
             echo "# no subdomains found from interlace or bbot" > "${OUT_FILE}"
           fi
