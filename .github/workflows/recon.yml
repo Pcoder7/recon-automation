@@ -362,7 +362,9 @@ jobs:
             echo "Checking Sudomy output at: ${SUDOMY_DOMAIN_DIR}/subdomains.txt"
             
             if [ -f "${SUDOMY_DOMAIN_DIR}/subdomains.txt" ]; then
-              cp "${SUDOMY_DOMAIN_DIR}/subdomains.txt" results/"${DOMAIN}"/sudomy.txt
+              cat "${SUDOMY_DOMAIN_DIR}/subdomains.txt" | sed 's/^\*\.//' | sed 's/^[[:space:]]*//; s/[[:space:]]*$//' \
+              | grep -P "^(?=.{1,253}$)(?:[A-Za-z0-9](?:[A-Za-z0-9-]{0,61}[A-Za-z0-9])?\.)+[A-Za-z]{2,63}$" --color=never >results/"${DOMAIN}"/sudomy.txt || true
+              
               echo "Sudomy results copied: $(wc -l < results/${DOMAIN}/sudomy.txt) subdomains"
             else
               echo "Sudomy subdomains.txt not found at expected location: ${SUDOMY_DOMAIN_DIR}/subdomains.txt"
@@ -372,7 +374,9 @@ jobs:
               # Try to find it in any date folder as fallback
               FOUND_SUDOMY=$(find "${SUDOMY_OUTPUT_BASE}" -type f -path "*/${DOMAIN}/subdomains.txt" -print -quit 2>/dev/null || true)
               if [ -n "${FOUND_SUDOMY}" ]; then
-                cp "${FOUND_SUDOMY}" results/"${DOMAIN}"/sudomy.txt
+                cat "${FOUND_SUDOMY}" | sed 's/^\*\.//' | sed 's/^[[:space:]]*//; s/[[:space:]]*$//' \
+                | grep -P "^(?=.{1,253}$)(?:[A-Za-z0-9](?:[A-Za-z0-9-]{0,61}[A-Za-z0-9])?\.)+[A-Za-z]{2,63}$" --color=never >results/"${DOMAIN}"/sudomy.txt || true
+                
                 echo "Found and copied Sudomy results from: ${FOUND_SUDOMY}"
                 echo "Sudomy subdomains: $(wc -l < results/${DOMAIN}/sudomy.txt)"
               else
