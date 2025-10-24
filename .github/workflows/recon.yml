@@ -245,6 +245,70 @@ jobs:
           
           # Store the installation path for later use
           echo "THEHARVESTER_INSTALL_DIR=${THEHARVESTER_INSTALL_DIR}" >> $GITHUB_ENV  
+
+      - name: Install and Configure theHarvester
+        shell: bash
+        run: |
+          echo "==== Installing theHarvester ===="
+          
+          # Store current directory
+          ORIGINAL_DIR=$(pwd)
+          echo "Current directory: ${ORIGINAL_DIR}"
+          
+          # Define installation directory
+          THEHARVESTER_INSTALL_DIR="/opt/theHarvester"
+          
+          if [ ! -d "${THEHARVESTER_INSTALL_DIR}" ]; then
+            echo "Installing UV package manager..."
+            # Install UV (modern Python package manager recommended by theHarvester)
+            curl -LsSf https://astral.sh/uv/install.sh | sh
+            
+            # Add UV to PATH for current session
+            export PATH="$HOME/.cargo/bin:$PATH"
+            
+            echo "Cloning theHarvester repository..."
+            git clone https://github.com/laramies/theHarvester "${THEHARVESTER_INSTALL_DIR}"
+            
+            cd "${THEHARVESTER_INSTALL_DIR}"
+            
+            echo "Installing dependencies with UV..."
+            # Install dependencies and create virtual environment
+            uv sync
+            
+            # Return to original directory
+            cd "${ORIGINAL_DIR}"
+            echo "Returned to: $(pwd)"
+            
+            # Create a wrapper script to run theHarvester easily
+            cat > /usr/local/bin/theHarvester <<'EOF'
+#!/bin/bash
+cd /opt/theHarvester
+uv run theHarvester "$@"
+EOF
+            
+            chmod +x /usr/local/bin/theHarvester
+            
+            echo "theHarvester installed successfully at: ${THEHARVESTER_INSTALL_DIR}"
+          else
+            echo "theHarvester already installed at: ${THEHARVESTER_INSTALL_DIR}"
+          fi
+          
+          # Verify installation
+          echo "==== Verifying theHarvester Installation ===="
+          ls -la "${THEHARVESTER_INSTALL_DIR}" || true
+          
+          if [ -f "${THEHARVESTER_INSTALL_DIR}/theHarvester.py" ]; then
+            echo "theHarvester.py found"
+          else
+            echo "WARNING: theHarvester.py not found!"
+          fi
+          
+          # Test theHarvester
+          echo "Testing theHarvester..."
+          theHarvester -h | head -n 5 || echo "theHarvester test failed, but may work later"
+          
+          # Store the installation path for later use
+          echo "THEHARVESTER_INSTALL_DIR=${THEHARVESTER_INSTALL_DIR}" >> $GITHUB_ENV
     
       - name: Install interlace tool
         shell: bash
