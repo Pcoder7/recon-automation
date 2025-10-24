@@ -310,7 +310,6 @@ jobs:
         env:
           DOMAIN: ${{ matrix.domain }}
         run: |
-
           
           echo "==== ENV ===="
           echo "PWD: $(pwd)"
@@ -378,25 +377,21 @@ jobs:
           
           # Make sure required binaries exist (install if missing)
           if ! command -v nmap >/dev/null 2>&1; then
-            echo "nmap missing -> attempting install (sudo apt-get)"
-            sudo apt-get update -y
-            sudo apt-get install -y nmap jq nodejs npm || true
+            echo "nmap missing -> attempting install (apt-get)"
+            apt-get update -y
+            apt-get install -y nmap jq nodejs npm || true
           fi
           
           # PhantomJS fallback (best-effort, apt often has no candidate)
           if ! command -v phantomjs >/dev/null 2>&1; then
             echo "phantomjs not found; attempting npm install -g phantomjs-prebuilt (best-effort)"
-            sudo npm i -g phantomjs-prebuilt || true
+            npm i -g phantomjs-prebuilt || true
           fi
           
           # Ensure Sudomy repo is present and contains expected files; re-clone if incomplete
           if [ ! -d "${SUDOMY_INSTALL_DIR}" ] || [ ! -f "${SUDOMY_INSTALL_DIR}/sudomy" ] || [ ! -f "${SUDOMY_INSTALL_DIR}/sudomy.api" ]; then
             echo "Sudomy appears missing or incomplete at ${SUDOMY_INSTALL_DIR} -> (re)cloning"
-            sudo rm -rf "${SUDOMY_INSTALL_DIR}" || true
-            sudo git clone --recursive https://github.com/screetsec/Sudomy.git "${SUDOMY_INSTALL_DIR}" || true
-            sudo python3 -m pip install -r "${SUDOMY_INSTALL_DIR}/requirements.txt" || true
-            sudo chmod +x "${SUDOMY_INSTALL_DIR}/sudomy" || true
-            sudo mkdir -p "${SUDOMY_OUTPUT_BASE}" || true
+            rm -rf "${SUDOMY_INSTALL_DIR}" || true
           fi
           
           # Short debug listing (keeps logs useful)
