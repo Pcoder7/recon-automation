@@ -156,7 +156,6 @@ jobs:
             apt-get install -y jq parallel
             
             echo "Installing npm packages..."
-            npm i -g wappalyzer wscat
             
             # Make sudomy executable
             chmod +x "${SUDOMY_INSTALL_DIR}/sudomy"
