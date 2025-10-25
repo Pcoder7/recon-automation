@@ -346,7 +346,9 @@ jobs:
           fi
           chaos -d "${DOMAIN}" -o "$OUTDIR/chaos_tmp.txt" -key "${PDCP_KEY}" -silent 
 
-          cat "$OUTDIR/chaos_tmp.txt" | sed 's/^\*\.//' | sed 's/^[[:space:]]*//; s/[[:space:]]*$//' | sort -u |  grep -P "^(?=.{1,253}$)(?:[A-Za-z0-9](?:[A-Za-z0-9-]{0,61}[A-Za-z0-9])?\.)+[A-Za-z]{2,63}$" --color=never || true
+          cat "$OUTDIR/chaos_tmp.txt" | sed 's/^\*\.//' | sed 's/^[[:space:]]*//; s/[[:space:]]*$//' | sort -u |  grep -P "^(?=.{1,253}$)(?:[A-Za-z0-9](?:[A-Za-z0-9-]{0,61}[A-Za-z0-9])?\.)+[A-Za-z]{2,63}$" --color=never > "$OUTDIR/chaos.txt"| true
+
+          rm "$OUTDIR/chaos_tmp.txt" 
           
           # --- oneforall: extract subdomain entries (fixed jq usage) ---
           echo "====== Collect OneForAll results ===========" 
