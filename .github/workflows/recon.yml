@@ -323,12 +323,13 @@ jobs:
             echo "theHarvester outputs normalized into ${RESULTS_DIR}/theHarvester.txt (lines: $(wc -l < "${RESULTS_DIR}/theHarvester.txt" || echo 0))"
           fi
           
-
+          rm "${THEHARVEST_JSON}"
+          rm "${RESULTS_DIR}/theharvester.xml"
           
 
           echo "====== Running assetfinder ===========" 
 
-          assetfinder --subs-only "${DOMAIN}" \
+          assetfinder --subs-only "${DOMAIN}" -w \
             | sed 's/^\*\.//' \
             | sed 's/^[[:space:]]*//; s/[[:space:]]*$//' \
             | grep -P "^(?=.{1,253}$)(?:[A-Za-z0-9](?:[A-Za-z0-9-]{0,61}[A-Za-z0-9])?\.)+[A-Za-z]{2,63}$" --color=never \
@@ -345,7 +346,7 @@ jobs:
           fi
           chaos -d "${DOMAIN}" -o "$OUTDIR/chaos_tmp.txt" -key "${PDCP_KEY}" -silent 
 
-          cat "$OUTDIR/chaos_tmp.txt" | sed 's/^\*\.//' | sed 's/^[[:space:]]*//; s/[[:space:]]*$//' | grep -P "^(?=.{1,253}$)(?:[A-Za-z0-9](?:[A-Za-z0-9-]{0,61}[A-Za-z0-9])?\.)+[A-Za-z]{2,63}$" --color=never || true
+          cat "$OUTDIR/chaos_tmp.txt" | sed 's/^\*\.//' | sed 's/^[[:space:]]*//; s/[[:space:]]*$//' | sort -u |  grep -P "^(?=.{1,253}$)(?:[A-Za-z0-9](?:[A-Za-z0-9-]{0,61}[A-Za-z0-9])?\.)+[A-Za-z]{2,63}$" --color=never || true
           
           # --- oneforall: extract subdomain entries (fixed jq usage) ---
           echo "====== Collect OneForAll results ===========" 
@@ -464,20 +465,20 @@ jobs:
           echo "  BBOT:      ${BBOT_FILE} (exists: $( [ -f "${BBOT_FILE}" ] && echo yes || echo no ))"
 
           if [ -f "${INTERLACE_FILE}" ] && [ -f "${BBOT_FILE}" ]; then
-            cat "${INTERLACE_FILE}" "${BBOT_FILE}" "$OUTDIR/chaos.txt" "results/${DOMAIN}/assetfinder.txt" "results/${DOMAIN}/theHarvester.txt" "results/${DOMAIN}/sudomy.txt" "$EXTERNAL_FINAL" | sort -u > "${OUT_FILE}"
+            cat "${INTERLACE_FILE}" "${BBOT_FILE}" "$OUTDIR/chaos.txt" "results/${DOMAIN}/assetfinder.txt" "results/${DOMAIN}/theHarvester.txt" "$EXTERNAL_FINAL" | sort -u > "${OUT_FILE}"
           elif [ -f "${INTERLACE_FILE}" ]; then
             sort -u "${INTERLACE_FILE}" > "${OUT_FILE}"
           elif [ -f "${BBOT_FILE}" ]; then
-            sort -u "${BBOT_FILE}" "$OUTDIR/chaos.txt" "results/${DOMAIN}/assetfinder.txt" "results/${DOMAIN}/theHarvester.txt" "results/${DOMAIN}/sudomy.txt" "$EXTERNAL_FINAL" > "${OUT_FILE}"
+            sort -u "${BBOT_FILE}" "$OUTDIR/chaos.txt" "results/${DOMAIN}/assetfinder.txt" "results/${DOMAIN}/theHarvester.txt" "$EXTERNAL_FINAL" > "${OUT_FILE}"
           else
             echo "# no subdomains found from interlace or bbot" > "${OUT_FILE}"
           fi
 
           echo "Final all_subdomains.txt lines: $(wc -l < "${OUT_FILE}" || echo 0)"
           echo "Final listing results/${DOMAIN}:"
-          ls -la results/"${DOMAIN}" || true
           rm "results/${DOMAIN}/oneforall.json" 
           rm -r "results/${DOMAIN}/bbot-output"
+          
 
       - name: Upload all results for ${{ matrix.domain }}
         uses: actions/upload-artifact@v4
