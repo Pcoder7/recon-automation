@@ -124,97 +124,6 @@ jobs:
           
           echo "$HOME/go/bin" >> $GITHUB_PATH
 
-      - name: Ensure Node + phantomjs available
-        shell: bash
-        run: |
-          
-          echo "Installing Node (via actions/setup-node is preferred). Falling back to apt if needed."
-          # If running inside GH Actions prefer actions/setup-node; fallback:
-          if ! command -v node >/dev/null 2>&1; then
-            curl -fsSL https://deb.nodesource.com/setup_18.x | bash -
-            apt-get update -y
-            apt-get install -y nodejs
-          fi
-          node --version
-          npm --version
-    
-          # Install phantomjs via npm prebuilt (global)
-          npm install -g --unsafe-perm phantomjs-prebuilt@2.1.16 || true
-          echo "phantomjs path: $(which phantomjs || echo 'not found')"
-          phantomjs --version || echo "phantomjs not available"     
-
-      - name: Install and Configure Sudomy
-        shell: bash
-        run: |
-          echo "==== Installing Sudomy ===="
-          
-          # Store current directory
-          ORIGINAL_DIR=$(pwd)
-          echo "Current directory: ${ORIGINAL_DIR}"
-          
-          # Clone Sudomy to a known location
-          SUDOMY_INSTALL_DIR="/opt/sudomy"
-          
-          if [ ! -d "${SUDOMY_INSTALL_DIR}" ]; then
-            git clone --recursive https://github.com/screetsec/Sudomy.git "${SUDOMY_INSTALL_DIR}"
-            cd "${SUDOMY_INSTALL_DIR}"
-            
-            echo "Installing Python requirements..."
-            python3 -m pip install -r requirements.txt
-            
-            echo "Installing system dependencies..."
-            apt-get update
-            apt-get install -y jq chromium parallel || true
-            
-
-            echo "Node version: $(node --version 2>/dev/null || echo 'node not found')"
-            echo "NPM version: $(npm --version 2>/dev/null || echo 'npm not found')"
-            echo "nmap: $(which nmap || true) $(nmap --version 2>/dev/null | head -n1 || true)"
-            echo "chromium-browser: $(which chromium-browser || true)"
-
-            
-            # Make sudomy executable
-            chmod +x "${SUDOMY_INSTALL_DIR}/sudomy"
-            chown -R "$(whoami)":"$(whoami)" "${SUDOMY_INSTALL_DIR}"
-            # Return to original directory
-            cd "${ORIGINAL_DIR}"
-            echo "Returned to: $(pwd)"
-            
-            # Add to PATH
-            echo "${SUDOMY_INSTALL_DIR}" >> $GITHUB_PATH
-            
-            # Create output directory if it doesn't exist
-            mkdir -p "${SUDOMY_INSTALL_DIR}/output"
-            
-            echo "Sudomy installed successfully at: ${SUDOMY_INSTALL_DIR}"
-          else
-            echo "Sudomy already installed at: ${SUDOMY_INSTALL_DIR}"
-          fi
-          
-          # Verify installation (from original directory)
-          echo "==== Verifying Sudomy Installation ===="
-          echo "Current working directory: $(pwd)"
-          ls -la "${SUDOMY_INSTALL_DIR}" || true
-          
-          if [ -f "${SUDOMY_INSTALL_DIR}/sudomy" ]; then
-            echo "Sudomy executable found"
-            echo "Sudomy location: ${SUDOMY_INSTALL_DIR}/sudomy"
-          else
-            echo "WARNING: Sudomy executable not found!"
-          fi
-          
-          # Check if output directory exists
-          if [ -d "${SUDOMY_INSTALL_DIR}/output" ]; then
-            echo "Sudomy output directory confirmed at: ${SUDOMY_INSTALL_DIR}/output"
-          else
-            echo "WARNING: Output directory not found, creating it..."
-            mkdir -p "${SUDOMY_INSTALL_DIR}/output"
-          fi
-          ls -la "${SUDOMY_INSTALL_DIR}" || true
-          # Store the installation path for later use
-          echo "SUDOMY_INSTALL_DIR=${SUDOMY_INSTALL_DIR}" >> $GITHUB_ENV
-
-
       - name: Install and Configure theHarvester
         shell: bash
         run: |
@@ -385,7 +294,7 @@ jobs:
           if command -v theHarvester >/dev/null 2>&1; then
             echo "Invoking theHarvester (absolute output path)"
             # run with timeout to avoid hangs
-            timeout 10m theHarvester -d "${DOMAIN}" -b all -f "${THEHARVEST_JSON}" --quiet || echo "theHarvester exited with non-zero code"
+            theHarvester -d "${DOMAIN}" -b all -f "${THEHARVEST_JSON}" --quiet || echo "theHarvester exited with non-zero code"
           else
             echo "theHarvester binary not found in PATH; attempting direct python invocation from /opt/theHarvester"
             if [ -d "/opt/theHarvester" ]; then
@@ -414,102 +323,7 @@ jobs:
             echo "theHarvester outputs normalized into ${RESULTS_DIR}/theHarvester.txt (lines: $(wc -l < "${RESULTS_DIR}/theHarvester.txt" || echo 0))"
           fi
           
-          echo "==== Collecting Sudomy results ===="
-          WORKSPACE="${GITHUB_WORKSPACE:-$(pwd)}"
-          DOMAIN="${DOMAIN:?DOMAIN must be set}"
-          WORK_RESULTS_DIR="${WORKSPACE}/results/${DOMAIN}"
-          mkdir -p "${WORK_RESULTS_DIR}"
-          echo "Workspace results dir: ${WORK_RESULTS_DIR}"
-          
-          # Put Sudomy into workspace (avoid /opt to prevent permission/partial-install issues)
-          SUDOMY_DIR="${WORKSPACE}/sudomy"
-          SUDOMY_OUTPUT_BASE="${SUDOMY_DIR}/output"
-          
-          # Ensure minimal required system deps (avoid nodejs install here)
-          echo "Installing required system packages (best-effort): nmap jq git chromium-browser"
 
-          
-          echo "Debug: which nmap: $(which nmap || true)"
-          echo "Debug: which git: $(which git || true)"
-          echo "Debug: which chromium-browser: $(which chromium-browser || true)"
-          
-          # Clone Sudomy into workspace (guaranteed writable)
-          if [ ! -d "${SUDOMY_DIR}" ]; then
-            echo "Cloning Sudomy into ${SUDOMY_DIR}"
-            git clone --depth 1 --recursive https://github.com/screetsec/Sudomy.git "${SUDOMY_DIR}" || {
-              echo "git clone failed — creating empty sudomy.txt and exiting this block"
-              touch "${WORK_RESULTS_DIR}/sudomy.txt"
-              exit 0
-            }
-          else
-            echo "Sudomy already present at ${SUDOMY_DIR}; pulling latest"
-            git -C "${SUDOMY_DIR}" pull --ff-only || true
-          fi
-          
-          # Ensure python requirements installed into user site (no sudo to avoid permission problems)
-          export PATH="$HOME/.local/bin:$PATH"
-          echo "Installing Python requirements (user install)"
-          python3 -m pip install --user -r "${SUDOMY_DIR}/requirements.txt" || {
-            echo "pip install (user) failed; continuing — Sudomy may still run partially"
-          }
-          
-          # Debug listing
-          echo "Listing top of Sudomy dir:"
-          ls -la "${SUDOMY_DIR}" | sed -n '1,200p' || true
-          echo "sudomy.api present? $( [ -f "${SUDOMY_DIR}/sudomy.api" ] && echo yes || echo no )"
-          echo "sudomy wrapper present? $( [ -f "${SUDOMY_DIR}/sudomy" ] && echo yes || echo no )"
-          
-          # Run Sudomy from repo dir using pushd/popd and prefer python3 ./sudomy.api
-          pushd "${SUDOMY_DIR}" >/dev/null || ( echo "Failed to enter ${SUDOMY_DIR}" && touch "${WORK_RESULTS_DIR}/sudomy.txt" && exit 0 )
-          
-          if [ -f "./sudomy.api" ]; then
-            echo "Running: python3 ./sudomy.api -d ${DOMAIN} --no-probe"
-            timeout 20m python3 ./sudomy.api -d "${DOMAIN}" --no-probe || true
-          elif [ -f "./sudomy" ]; then
-            echo "Running: ./sudomy -d ${DOMAIN} --no-probe"
-            chmod +x ./sudomy || true
-            timeout 20m ./sudomy -d "${DOMAIN}" --no-probe || true
-          else
-            echo "No sudomy launcher found; aborting sudomy run and creating empty result file"
-            popd >/dev/null || true
-            touch "${WORK_RESULTS_DIR}/sudomy.txt"
-            echo "==== Completed hardened Sudomy run (no launcher) ===="
-            exit 0
-          fi
-          
-          popd >/dev/null || true
-          
-          # Locate Sudomy output for today (MM-DD-YYYY) and fallback search across output dir
-          TODAY=$(date +"%m-%d-%Y")
-          EXPECTED="${SUDOMY_OUTPUT_BASE}/${TODAY}/${DOMAIN}/subdomains.txt"
-          echo "Checking Sudomy output at: ${EXPECTED}"
-          
-          if [ -f "${EXPECTED}" ]; then
-            echo "Found Sudomy output at expected path; normalizing and copying to workspace"
-            sed 's/^\*\.//' "${EXPECTED}" \
-              | sed 's/^[[:space:]]*//; s/[[:space:]]*$//' \
-              | grep -P "^(?=.{1,253}$)(?:[A-Za-z0-9](?:[A-Za-z0-9-]{0,61}[A-Za-z0-9])?\.)+[A-Za-z]{2,63}$" --color=never \
-              > "${WORK_RESULTS_DIR}/sudomy.txt" || true
-          
-            echo "Copied ${WORK_RESULTS_DIR}/sudomy.txt (lines: $(wc -l < "${WORK_RESULTS_DIR}/sudomy.txt" || echo 0))"
-          else
-            echo "Sudomy subdomains.txt not at expected path; searching all dates under ${SUDOMY_OUTPUT_BASE}"
-            FOUND=$(find "${SUDOMY_OUTPUT_BASE}" -type f -path "*/${DOMAIN}/subdomains.txt" -print -quit 2>/dev/null || true)
-            if [ -n "${FOUND}" ]; then
-              echo "Found Sudomy output at ${FOUND}; copying to workspace"
-              sed 's/^\*\.//' "${FOUND}" \
-                | sed 's/^[[:space:]]*//; s/[[:space:]]*$//' \
-                | grep -P "^(?=.{1,253}$)(?:[A-Za-z0-9](?:[A-Za-z0-9-]{0,61}[A-Za-z0-9])?\.)+[A-Za-z]{2,63}$" --color=never \
-                > "${WORK_RESULTS_DIR}/sudomy.txt" || true
-          
-              echo "Copied ${WORK_RESULTS_DIR}/sudomy.txt (lines: $(wc -l < "${WORK_RESULTS_DIR}/sudomy.txt" || echo 0))"
-            else
-              echo "No Sudomy results found under ${SUDOMY_OUTPUT_BASE}. Creating empty sudomy.txt in workspace"
-              touch "${WORK_RESULTS_DIR}/sudomy.txt"
-            fi
-          fi
-          
-          echo "==== Completed hardened Sudomy run ===="
           
 
           echo "====== Running assetfinder ===========" 
@@ -529,8 +343,10 @@ jobs:
             # print length only (safe)
             echo "PDCP_KEY present, length=$(printf '%s' "$PDCP_KEY" | wc -c)"
           fi
-          chaos -d "${{ matrix.domain }}" -o "$OUTDIR/chaos.txt" -key "${PDCP_KEY}" -silent | sed 's/^\*\.//' | sed 's/^[[:space:]]*//; s/[[:space:]]*$//' | grep -P "^(?=.{1,253}$)(?:[A-Za-z0-9](?:[A-Za-z0-9-]{0,61}[A-Za-z0-9])?\.)+[A-Za-z]{2,63}$" --color=never || true
+          chaos -d "${DOMAIN}" -o "$OUTDIR/chaos_tmp.txt" -key "${PDCP_KEY}" -silent 
 
+          cat "$OUTDIR/chaos_tmp.txt" | sed 's/^\*\.//' | sed 's/^[[:space:]]*//; s/[[:space:]]*$//' | grep -P "^(?=.{1,253}$)(?:[A-Za-z0-9](?:[A-Za-z0-9-]{0,61}[A-Za-z0-9])?\.)+[A-Za-z]{2,63}$" --color=never || true
+          
           # --- oneforall: extract subdomain entries (fixed jq usage) ---
           echo "====== Collect OneForAll results ===========" 
           if [[ -s "$JSONFILE" ]]; then
