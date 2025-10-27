@@ -375,7 +375,7 @@ jobs:
               | inscope --scope .scope \
               | sort -u > results/"${DOMAIN}"/all_subdomains_interlace.txt || true             
             
-            echo "all_subdomains_interlace.txt lines: $(wc -l < results/${DOMAIN}/all_subdomains_interlace.txt || echo 0)"
+            echo "all_subdomains_interlace.txt lines: $(wc -l < results/${DOMAIN}/all_subdomains_interlace.txt || true)"
           else
             echo "No known interlace subdomain files found to combine."
           fi
