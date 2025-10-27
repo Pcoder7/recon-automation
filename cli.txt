@@ -1,5 +1,5 @@
+findomain -t _target_ -u _output_/findomain.txt --quiet
 subfinder -d _target_ -all -duc -silent -nc -o _output_/subfinder.txt
 shrewdeye -d _target_ -o _output_/shrewdeye.txt
 amass enum -passive -d _target_ -norecursive -o _output_/amass.txt -silent
 oneforall --target _target_ --path _output_/oneforall.json --brute False --alive False --dns False --req False --fmt json run
-findomain -t _target_ -u _output_/findomain.txt --quiet
