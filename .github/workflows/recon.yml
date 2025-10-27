@@ -253,7 +253,7 @@ jobs:
           mkdir -p results/"${DOMAIN}"
           interlace \
             -t "${DOMAIN}" \
-            -threads 3 \
+            -threads 8 \
             -cL cli.txt \
             -o results/"${DOMAIN}" \
             -v || echo "interlace returned $?"
