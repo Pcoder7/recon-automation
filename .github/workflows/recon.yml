@@ -344,7 +344,7 @@ jobs:
             # print length only (safe)
             echo "PDCP_KEY present, length=$(printf '%s' "$PDCP_KEY" | wc -c)"
           fi
-          chaos -d "${DOMAIN}" -o "$OUTDIR/chaos_tmp.txt" -key "${PDCP_KEY}" -silent 
+          chaos -d "${DOMAIN}" -o "$OUTDIR/chaos_tmp.txt" -key "${PDCP_KEY}" -silent || true
 
           cat "$OUTDIR/chaos_tmp.txt" | sed 's/^\*\.//' | sed 's/^[[:space:]]*//; s/[[:space:]]*$//' | sort -u |  grep -P "^(?=.{1,253}$)(?:[A-Za-z0-9](?:[A-Za-z0-9-]{0,61}[A-Za-z0-9])?\.)+[A-Za-z]{2,63}$" --color=never > "$OUTDIR/chaos.txt"| true
 
